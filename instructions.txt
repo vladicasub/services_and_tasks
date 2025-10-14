@@ -1,6 +1,7 @@
 always run the chain
  - build
  - check
+ - test
  - run
 
 to compile
@@ -8,6 +9,9 @@ cd /home/vladica/work/src/services_and_tasks && npm run build
 
 to check -- run all the static analysis of the code (install all the needed tools and extensions)
 fix all the warnings and errors reported
+
+to test -- run all tests (this is obligatory)
+cd /home/vladica/work/src/services_and_tasks && npm test
 
 to run 
 cd /home/vladica/work/src/services_and_tasks && ./transform --input-json input_jsons
