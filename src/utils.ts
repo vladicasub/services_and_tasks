@@ -5,7 +5,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import ExcelJS from 'exceljs';
-import { unflattenObject } from './transforms';
+import { flattenObject, unflattenObject } from './transforms';
+import { TransformSummary, ExcelWriteOptions } from './types';
 
 /**
  * Validate that a directory exists and is actually a directory
@@ -114,5 +115,68 @@ export function ensureOutputDirectory(basePath: string): string {
     fs.mkdirSync(outputDir, { recursive: true });
   }
   return outputDir;
+}
+
+/**
+ * Format file size in bytes to KB string
+ * @param bytes - Size in bytes
+ * @returns Formatted string (e.g., "1.23 KB")
+ */
+export function formatSize(bytes: number): string {
+  return (bytes / 1024).toFixed(2) + ' KB';
+}
+
+/**
+ * Write data to an Excel worksheet
+ * @param data - Array of objects to write
+ * @param options - Excel writing options
+ * @returns ExcelJS workbook
+ */
+export async function writeExcelData(
+  data: any[],
+  options: ExcelWriteOptions
+): Promise<ExcelJS.Workbook> {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet(options.sheetName);
+  
+  // Flatten the data
+  const flattenedData = data.map(item => flattenObject(item));
+  
+  // Get column headers
+  const headers = Object.keys(flattenedData[0] || {});
+  
+  // Add header row with optional formatting
+  worksheet.columns = headers.map(header => ({
+    header: header,
+    key: header,
+    width: options.columnWidth || 40
+  }));
+  
+  // Apply bold formatting to headers if requested
+  if (options.boldHeaders !== false) {
+    const headerRow = worksheet.getRow(1);
+    headerRow.font = { bold: true };
+    headerRow.commit();
+  }
+  
+  // Add data rows
+  flattenedData.forEach(row => {
+    worksheet.addRow(row);
+  });
+  
+  return workbook;
+}
+
+/**
+ * Report transformation summary to console
+ * @param summary - Summary information
+ * @param type - Type of transformation ('JSON to XLSX' or 'XLSX to JSON')
+ */
+export function reportSummary(summary: TransformSummary, type: string): void {
+  console.log('─'.repeat(80));
+  console.log(`\n📈 Summary:`);
+  console.log(`   ✅ Success: ${summary.successCount} file(s)`);
+  console.log(`   ❌ Failed: ${summary.errorCount} file(s)`);
+  console.log(`   📁 Output directory: ${summary.outputDir}\n`);
 }
 

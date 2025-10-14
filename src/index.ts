@@ -3,10 +3,18 @@
 import { program } from 'commander';
 import * as fs from 'fs';
 import * as path from 'path';
-import ExcelJS from 'exceljs';
 import { flattenObject } from './transforms';
-import { validateDirectory, findFilesWithExtension, readExcelData, ensureOutputDirectory } from './utils';
+import { 
+  validateDirectory, 
+  findFilesWithExtension, 
+  readExcelData, 
+  ensureOutputDirectory,
+  formatSize,
+  writeExcelData,
+  reportSummary
+} from './utils';
 import { loadFieldOptions, validateData, reportValidationErrors } from './validation';
+import { TransformSummary } from './types';
 
 /**
  * Transform from JSON - Convert JSON files to XLSX
@@ -86,28 +94,12 @@ async function transform_from_json(dirPath: string): Promise<void> {
           continue;
         }
         
-        // Create ExcelJS workbook and worksheet
-        const workbook = new ExcelJS.Workbook();
+        // Create Excel workbook using utility function
         const sheetName = file.replace('.json', '').substring(0, 31);
-        const worksheet = workbook.addWorksheet(sheetName);
-        
-        // Get column headers
-        const headers = Object.keys(flattenedData[0] || {});
-        
-        // Add header row with bold formatting and wide columns (4x default = 40)
-        worksheet.columns = headers.map(header => ({
-          header: header,
-          key: header,
-          width: 40
-        }));
-        
-        const headerRow = worksheet.getRow(1);
-        headerRow.font = { bold: true };
-        headerRow.commit();
-        
-        // Add data rows
-        flattenedData.forEach(row => {
-          worksheet.addRow(row);
+        const workbook = await writeExcelData(flattenedData, {
+          sheetName,
+          columnWidth: 40,
+          boldHeaders: true
         });
         
         // Write XLSX file
@@ -116,7 +108,6 @@ async function transform_from_json(dirPath: string): Promise<void> {
         // Get file sizes for reporting
         const inputSize = fs.statSync(inputPath).size;
         const outputSize = fs.statSync(outputPath).size;
-        const formatSize = (bytes: number) => (bytes / 1024).toFixed(2) + ' KB';
         
         console.log(`✅ ${file} (${formatSize(inputSize)}) → ${outputFileName} (${formatSize(outputSize)})`);
         successCount++;
@@ -127,11 +118,8 @@ async function transform_from_json(dirPath: string): Promise<void> {
       }
     }
     
-    console.log('─'.repeat(80));
-    console.log(`\n📈 Summary:`);
-    console.log(`   ✅ Success: ${successCount} file(s)`);
-    console.log(`   ❌ Failed: ${errorCount} file(s)`);
-    console.log(`   📁 Output directory: ${outputDir}\n`);
+    // Report summary
+    reportSummary({ successCount, errorCount, outputDir }, 'JSON to XLSX');
     
   } catch (error) {
     console.error('Fatal error:', error);
@@ -174,6 +162,7 @@ async function transform_from_table(dirPath: string): Promise<void> {
         const outputPath = path.join(outputDir, outputFileName);
         
         // Read XLSX file using ExcelJS
+        const ExcelJS = require('exceljs');
         const workbook = new ExcelJS.Workbook();
         await workbook.xlsx.readFile(inputPath);
         
@@ -204,7 +193,6 @@ async function transform_from_table(dirPath: string): Promise<void> {
         // Get file sizes for reporting
         const inputSize = fs.statSync(inputPath).size;
         const outputSize = fs.statSync(outputPath).size;
-        const formatSize = (bytes: number) => (bytes / 1024).toFixed(2) + ' KB';
         
         console.log(`✅ ${file} (${formatSize(inputSize)}) → ${outputFileName} (${formatSize(outputSize)})`);
         successCount++;
@@ -215,11 +203,8 @@ async function transform_from_table(dirPath: string): Promise<void> {
       }
     }
     
-    console.log('─'.repeat(80));
-    console.log(`\n📈 Summary:`);
-    console.log(`   ✅ Success: ${successCount} file(s)`);
-    console.log(`   ❌ Failed: ${errorCount} file(s)`);
-    console.log(`   📁 Output directory: ${outputDir}\n`);
+    // Report summary
+    reportSummary({ successCount, errorCount, outputDir }, 'XLSX to JSON');
     
   } catch (error) {
     console.error('Fatal error:', error);
