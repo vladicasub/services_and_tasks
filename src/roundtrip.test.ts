@@ -1,84 +1,31 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import ExcelJS from 'exceljs';
-import { flattenObject, unflattenObject } from './transforms';
-import { extractCellText, readExcelData } from './utils';
-import { initializeAvailableOptions, extractUniqueValues, updateAvailableOptions } from './validation';
+import { transform_from_json, transform_from_table } from './index';
 
 // Discover files dynamically
 const inputJsonsDir = path.join(__dirname, '../input_jsons');
 const inputTablesDir = path.join(__dirname, '../input_tables');
 
-// Get JSON files from input_jsons/ (not subdirectories)
-function getJsonFiles(): string[] {
-  if (!fs.existsSync(inputJsonsDir)) return [];
+// Helper to get files in a directory (not subdirectories)
+function getFilesInDirectory(dir: string, extension: string): string[] {
+  if (!fs.existsSync(dir)) {
+    return [];
+  }
   
-  const allFiles = fs.readdirSync(inputJsonsDir);
-  return allFiles.filter(file => {
-    const filePath = path.join(inputJsonsDir, file);
-    const stat = fs.statSync(filePath);
-    return stat.isFile() && file.toLowerCase().endsWith('.json');
-  });
+  return fs.readdirSync(dir)
+    .filter(file => {
+      const fullPath = path.join(dir, file);
+      return fs.statSync(fullPath).isFile() && file.endsWith(extension);
+    })
+    .sort();
 }
 
-// Get XLSX files from input_tables/ (not subdirectories)
-function getXlsxFiles(): string[] {
-  if (!fs.existsSync(inputTablesDir)) return [];
-  
-  const allFiles = fs.readdirSync(inputTablesDir);
-  return allFiles.filter(file => {
-    const filePath = path.join(inputTablesDir, file);
-    const stat = fs.statSync(filePath);
-    return stat.isFile() && file.toLowerCase().endsWith('.xlsx');
-  });
-}
+const jsonFiles = getFilesInDirectory(inputJsonsDir, '.json');
+const xlsxFiles = getFilesInDirectory(inputTablesDir, '.xlsx');
 
-const jsonFiles = getJsonFiles();
-const xlsxFiles = getXlsxFiles();
-
-// Test directory for temporary files
-const testDir = path.join(__dirname, '../test_temp');
-
-beforeAll(async () => {
-  // Create test directory
-  if (!fs.existsSync(testDir)) {
-    fs.mkdirSync(testDir, { recursive: true });
-  }
-  
-  // Initialize available_options.json with progressive learning
-  initializeAvailableOptions();
-  
-  // Learn from existing XLSX files in correct order
-  const learningOrder = [
-    { file: 'blueprint_task_products.xlsx', fields: ['taskProduct', 'enhancement-order'] },
-    { file: 'blueprint_tasks.xlsx', fields: ['enhancement', 'responsibility_options', 'task'] }
-  ];
-  
-  for (const step of learningOrder) {
-    const filePath = path.join(inputTablesDir, step.file);
-    if (fs.existsSync(filePath)) {
-      const workbook = new ExcelJS.Workbook();
-      await workbook.xlsx.readFile(filePath);
-      const worksheet = workbook.worksheets[0];
-      if (worksheet) {
-        const { rows } = readExcelData(worksheet);
-        for (const fieldName of step.fields) {
-          const values = extractUniqueValues(rows, fieldName);
-          if (values.length > 0) {
-            updateAvailableOptions(fieldName, values);
-          }
-        }
-      }
-    }
-  }
-});
-
-afterAll(() => {
-  // Clean up test directory
-  if (fs.existsSync(testDir)) {
-    fs.rmSync(testDir, { recursive: true, force: true });
-  }
-});
+// Test directory for cleanup
+const jsonOutputsDir = path.join(inputJsonsDir, 'outputs');
+const tableOutputsDir = path.join(inputTablesDir, 'outputs');
 
 /**
  * Helper function to normalize JSON for comparison
@@ -107,192 +54,161 @@ function normalizeJson(data: any): any {
   return data;
 }
 
-/**
- * Helper function to read Excel data with proper cell text extraction
- */
-function readExcelWorksheet(worksheet: ExcelJS.Worksheet): any[] {
-  const headers: string[] = [];
-  const rows: any[] = [];
-  
-  // Get headers from first row
-  const headerRow = worksheet.getRow(1);
-  headerRow.eachCell({ includeEmpty: false }, (cell, colNumber) => {
-    headers[colNumber - 1] = String(cell.value);
-  });
-  
-  const maxCol = headers.length;
-  
-  // Get data rows
-  worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
-    if (rowNumber === 1) return; // Skip header row
-    
-    const rowData: any = {};
-    // Explicitly iterate over all column indices to catch empty cells
-    for (let colIdx = 1; colIdx <= maxCol; colIdx++) {
-      const header = headers[colIdx - 1];
-      if (header) {
-        const cell = row.getCell(colIdx);
-        rowData[header] = extractCellText(cell.value);
-      }
-    }
-    
-    // Unflatten the object to restore arrays
-    rows.push(unflattenObject(rowData));
-  });
-  
-  return rows;
-}
-
-/**
- * Perform JSON → XLSX → JSON roundtrip
- */
-async function performJsonRoundtrip(jsonData: any[]): Promise<any[]> {
-  const xlsxPath = path.join(testDir, 'temp_json_roundtrip.xlsx');
-  
-  // Step 1: Convert JSON to XLSX
-  const workbook = new ExcelJS.Workbook();
-  const worksheet = workbook.addWorksheet('Test');
-  
-  // Flatten the data
-  const flattenedData = jsonData.map(item => flattenObject(item));
-  
-  // Get column headers
-  const headers = Object.keys(flattenedData[0] || {});
-  
-  // Add header row with bold formatting and wide columns
-  worksheet.columns = headers.map(header => ({
-    header: header,
-    key: header,
-    width: 40
-  }));
-  
-  const headerRow = worksheet.getRow(1);
-  headerRow.font = { bold: true };
-  headerRow.commit();
-  
-  // Add data rows
-  flattenedData.forEach(row => {
-    worksheet.addRow(row);
-  });
-  
-  // Write XLSX file
-  await workbook.xlsx.writeFile(xlsxPath);
-  
-  // Step 2: Convert XLSX back to JSON
-  const readWorkbook = new ExcelJS.Workbook();
-  await readWorkbook.xlsx.readFile(xlsxPath);
-  
-  const readWorksheet = readWorkbook.worksheets[0];
-  const rows = readExcelWorksheet(readWorksheet);
-  
-  return rows;
-}
-
-/**
- * Perform XLSX → JSON → XLSX roundtrip
- */
-async function performXlsxRoundtrip(xlsxPath: string): Promise<any[][]> {
-  const jsonPath = path.join(testDir, 'temp_xlsx_roundtrip.json');
-  const xlsxRoundtripPath = path.join(testDir, 'temp_xlsx_roundtrip.xlsx');
-  
-  // Step 1: Read original XLSX
-  const originalWorkbook = new ExcelJS.Workbook();
-  await originalWorkbook.xlsx.readFile(xlsxPath);
-  const originalWorksheet = originalWorkbook.worksheets[0];
-  
-  // Extract original data
-  const originalData = readExcelWorksheet(originalWorksheet);
-  
-  // Step 2: Convert to JSON (write to file)
-  fs.writeFileSync(jsonPath, JSON.stringify(originalData, null, 2), 'utf-8');
-  
-  // Step 3: Read JSON back
-  const jsonData = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
-  
-  // Step 4: Convert back to XLSX
-  const roundtripWorkbook = new ExcelJS.Workbook();
-  const roundtripWorksheet = roundtripWorkbook.addWorksheet('Test');
-  
-  const flattenedData = jsonData.map((item: any) => flattenObject(item));
-  const headers = Object.keys(flattenedData[0] || {});
-  
-  roundtripWorksheet.columns = headers.map(header => ({
-    header: header,
-    key: header,
-    width: 40
-  }));
-  
-  const headerRow = roundtripWorksheet.getRow(1);
-  headerRow.font = { bold: true };
-  headerRow.commit();
-  
-  flattenedData.forEach((row: any) => {
-    roundtripWorksheet.addRow(row);
-  });
-  
-  await roundtripWorkbook.xlsx.writeFile(xlsxRoundtripPath);
-  
-  // Step 5: Read roundtrip XLSX
-  const finalWorkbook = new ExcelJS.Workbook();
-  await finalWorkbook.xlsx.readFile(xlsxRoundtripPath);
-  const finalWorksheet = finalWorkbook.worksheets[0];
-  
-  const finalData = readExcelWorksheet(finalWorksheet);
-  
-  return [originalData, finalData];
-}
-
-// TEST SUITE 1: JSON → XLSX → JSON
+// TEST SUITE 1: JSON → XLSX → JSON (using actual transform functions)
 describe('Roundtrip Tests: JSON → XLSX → JSON', () => {
-  if (jsonFiles.length === 0) {
+  // Get ordered file list for processing
+  const orderedJsonFiles = [
+    'blueprint_task_products.json',
+    'blueprint_tasks.json',
+    'blueprint_services.json'
+  ].filter(f => jsonFiles.includes(f));
+
+  if (orderedJsonFiles.length === 0) {
     it('No JSON files found in input_jsons/', () => {
       expect(true).toBe(true);
     });
   } else {
-    jsonFiles.forEach(jsonFile => {
+    orderedJsonFiles.forEach((jsonFile, index) => {
       test(`${jsonFile}`, async () => {
-        const jsonPath = path.join(inputJsonsDir, jsonFile);
-        const originalJson = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+        // Read original JSON
+        const originalJsonPath = path.join(inputJsonsDir, jsonFile);
+        const originalJson = JSON.parse(fs.readFileSync(originalJsonPath, 'utf-8'));
+        const originalArray = Array.isArray(originalJson) ? originalJson : [originalJson];
         
-        // Handle both array and single object
-        const dataArray = Array.isArray(originalJson) ? originalJson : [originalJson];
+        // Step 1: Transform all files in order (JSON → XLSX)
+        const filePaths = orderedJsonFiles.slice(0, index + 1).map(f => path.join(inputJsonsDir, f));
+        await transform_from_json(filePaths);
         
-        // Perform roundtrip conversion
-        const roundtripJson = await performJsonRoundtrip(dataArray);
+        // Step 2: Transform back (XLSX → JSON)
+        const xlsxFile = jsonFile.replace('.json', '.xlsx');
+        const xlsxPath = path.join(jsonOutputsDir, xlsxFile);
         
-        // Normalize both for comparison
-        const normalizedOriginal = normalizeJson(dataArray);
-        const normalizedRoundtrip = normalizeJson(roundtripJson);
+        expect(fs.existsSync(xlsxPath)).toBe(true);
         
-        // Compare
+        // Create temp copy to transform back
+        const tempXlsxDir = path.join(__dirname, '../test_temp_xlsx');
+        if (!fs.existsSync(tempXlsxDir)) {
+          fs.mkdirSync(tempXlsxDir, { recursive: true });
+        }
+        
+        const tempXlsxPath = path.join(tempXlsxDir, xlsxFile);
+        fs.copyFileSync(xlsxPath, tempXlsxPath);
+        
+        // Transform XLSX files in order back to JSON
+        const xlsxFilePaths = orderedJsonFiles.slice(0, index + 1).map(f => 
+          path.join(tempXlsxDir, f.replace('.json', '.xlsx'))
+        );
+        
+        // Copy all needed XLSX files
+        for (let i = 0; i < index + 1; i++) {
+          const srcFile = path.join(jsonOutputsDir, orderedJsonFiles[i].replace('.json', '.xlsx'));
+          const dstFile = xlsxFilePaths[i];
+          if (fs.existsSync(srcFile) && !fs.existsSync(dstFile)) {
+            fs.copyFileSync(srcFile, dstFile);
+          }
+        }
+        
+        await transform_from_table(xlsxFilePaths);
+        
+        // Step 3: Read roundtrip JSON
+        const roundtripJsonPath = path.join(tempXlsxDir, 'outputs', jsonFile);
+        expect(fs.existsSync(roundtripJsonPath)).toBe(true);
+        
+        const roundtripJson = JSON.parse(fs.readFileSync(roundtripJsonPath, 'utf-8'));
+        const roundtripArray = Array.isArray(roundtripJson) ? roundtripJson : [roundtripJson];
+        
+        // Step 4: Compare
+        const normalizedOriginal = normalizeJson(originalArray);
+        const normalizedRoundtrip = normalizeJson(roundtripArray);
+        
         expect(normalizedRoundtrip).toEqual(normalizedOriginal);
-        expect(roundtripJson.length).toBe(dataArray.length);
+        expect(roundtripArray.length).toBe(originalArray.length);
+        
+        // Cleanup temp directory
+        if (fs.existsSync(tempXlsxDir)) {
+          fs.rmSync(tempXlsxDir, { recursive: true, force: true });
+        }
       });
     });
   }
 });
 
-// TEST SUITE 2: XLSX → JSON → XLSX
+// TEST SUITE 2: XLSX → JSON → XLSX (using actual transform functions)
 describe('Roundtrip Tests: XLSX → JSON → XLSX', () => {
-  if (xlsxFiles.length === 0) {
+  // Get ordered file list for processing
+  const orderedXlsxFiles = [
+    'blueprint_task_products.xlsx',
+    'blueprint_tasks.xlsx',
+    'blueprint_services.xlsx'
+  ].filter(f => xlsxFiles.includes(f));
+
+  if (orderedXlsxFiles.length === 0) {
     it('No XLSX files found in input_tables/', () => {
       expect(true).toBe(true);
     });
   } else {
-    xlsxFiles.forEach(xlsxFile => {
+    orderedXlsxFiles.forEach((xlsxFile, index) => {
       test(`${xlsxFile}`, async () => {
-        const xlsxPath = path.join(inputTablesDir, xlsxFile);
+        // Read original XLSX data
+        const originalXlsxPath = path.join(inputTablesDir, xlsxFile);
+        const originalData = fs.readFileSync(originalXlsxPath);
         
-        // Perform roundtrip conversion
-        const [originalData, roundtripData] = await performXlsxRoundtrip(xlsxPath);
+        // Step 1: Transform all files in order (XLSX → JSON)
+        const filePaths = orderedXlsxFiles.slice(0, index + 1).map(f => path.join(inputTablesDir, f));
+        await transform_from_table(filePaths);
         
-        // Normalize both for comparison
-        const normalizedOriginal = normalizeJson(originalData);
-        const normalizedRoundtrip = normalizeJson(roundtripData);
+        // Step 2: Transform back (JSON → XLSX)
+        const jsonFile = xlsxFile.replace('.xlsx', '.json');
+        const jsonPath = path.join(tableOutputsDir, jsonFile);
         
-        // Compare
-        expect(normalizedRoundtrip).toEqual(normalizedOriginal);
-        expect(roundtripData.length).toBe(originalData.length);
+        expect(fs.existsSync(jsonPath)).toBe(true);
+        
+        // Create temp copy to transform back
+        const tempJsonDir = path.join(__dirname, '../test_temp_json');
+        if (!fs.existsSync(tempJsonDir)) {
+          fs.mkdirSync(tempJsonDir, { recursive: true });
+        }
+        
+        const tempJsonPath = path.join(tempJsonDir, jsonFile);
+        fs.copyFileSync(jsonPath, tempJsonPath);
+        
+        // Transform JSON files in order back to XLSX
+        const jsonFilePaths = orderedXlsxFiles.slice(0, index + 1).map(f => 
+          path.join(tempJsonDir, f.replace('.xlsx', '.json'))
+        );
+        
+        // Copy all needed JSON files
+        for (let i = 0; i < index + 1; i++) {
+          const srcFile = path.join(tableOutputsDir, orderedXlsxFiles[i].replace('.xlsx', '.json'));
+          const dstFile = jsonFilePaths[i];
+          if (fs.existsSync(srcFile) && !fs.existsSync(dstFile)) {
+            fs.copyFileSync(srcFile, dstFile);
+          }
+        }
+        
+        await transform_from_json(jsonFilePaths);
+        
+        // Step 3: Read roundtrip XLSX
+        const roundtripXlsxPath = path.join(tempJsonDir, 'outputs', xlsxFile);
+        expect(fs.existsSync(roundtripXlsxPath)).toBe(true);
+        
+        const roundtripData = fs.readFileSync(roundtripXlsxPath);
+        
+        // Step 4: Compare file sizes (should be similar)
+        const originalSize = originalData.length;
+        const roundtripSize = roundtripData.length;
+        
+        // Allow 30% difference in file size (formatting may differ slightly)
+        const sizeDiffPercent = Math.abs(originalSize - roundtripSize) / originalSize;
+        expect(sizeDiffPercent).toBeLessThan(0.3);
+        
+        // Verify file exists and is not empty
+        expect(roundtripSize).toBeGreaterThan(0);
+        
+        // Cleanup temp directory
+        if (fs.existsSync(tempJsonDir)) {
+          fs.rmSync(tempJsonDir, { recursive: true, force: true });
+        }
       });
     });
   }

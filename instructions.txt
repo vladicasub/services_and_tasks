@@ -14,7 +14,7 @@ to test -- run all tests (this is obligatory)
 cd /home/vladica/work/src/services_and_tasks && npm test
 
 to run 
-cd /home/vladica/work/src/services_and_tasks && ./transform --input-json input_jsons
-cd /home/vladica/work/src/services_and_tasks && ./transform --input-table input_tables
+cd /home/vladica/work/src/services_and_tasks && ./transform --input-json input_jsons/blueprint_task_products.json input_jsons/blueprint_tasks.json input_jsons/blueprint_services.json
+cd /home/vladica/work/src/services_and_tasks && ./transform --input-table input_tables/blueprint_task_products.xlsx input_tables/blueprint_tasks.xlsx input_tables/blueprint_services.xlsx
 
 
