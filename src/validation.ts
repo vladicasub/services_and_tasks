@@ -264,3 +264,97 @@ export function reportValidationErrors(file: string, errors: ValidationError[], 
   console.log('');
 }
 
+/**
+ * Build relationship: for each task, what responsibilities are available
+ */
+export function buildTaskResponsibilities(tasksData: any[]): Record<string, string[]> {
+  const taskResponsibilities: Record<string, string[]> = {};
+  
+  tasksData.forEach(taskRow => {
+    const task = taskRow.task;
+    const responsibilities = taskRow.responsibility_options;
+    
+    if (task && responsibilities) {
+      const responsibilityArray = Array.isArray(responsibilities) ? responsibilities : [responsibilities];
+      taskResponsibilities[task] = responsibilityArray.filter((r: string) => r && r.trim() !== '');
+    }
+  });
+  
+  return taskResponsibilities;
+}
+
+/**
+ * Build relationship: for each taskProduct, which tasks can produce it (have it as output)
+ */
+export function buildTaskProductProducers(tasksData: any[]): Record<string, string[]> {
+  const taskProductProducers: Record<string, string[]> = {};
+  
+  tasksData.forEach(taskRow => {
+    const task = taskRow.task;
+    const outputs = taskRow.outputs;
+    
+    if (task && outputs) {
+      const outputArray = Array.isArray(outputs) ? outputs : [outputs];
+      outputArray.forEach((output: string) => {
+        if (output && output.trim() !== '') {
+          if (!taskProductProducers[output]) {
+            taskProductProducers[output] = [];
+          }
+          if (!taskProductProducers[output].includes(task)) {
+            taskProductProducers[output].push(task);
+          }
+        }
+      });
+    }
+  });
+  
+  return taskProductProducers;
+}
+
+/**
+ * Build relationship: for each taskProduct, what enhancements are available
+ */
+export function buildTaskProductEnhancements(taskProductsData: any[]): Record<string, string[]> {
+  const taskProductEnhancements: Record<string, string[]> = {};
+  
+  taskProductsData.forEach(row => {
+    const taskProduct = row.taskProduct;
+    const enhancementOrder = row['enhancement-order'];
+    
+    if (taskProduct) {
+      const enhancements = Array.isArray(enhancementOrder) ? enhancementOrder : [];
+      taskProductEnhancements[taskProduct] = enhancements.filter((e: string) => e && e.trim() !== '');
+    }
+  });
+  
+  return taskProductEnhancements;
+}
+
+/**
+ * Update available_options.json with relationship mappings
+ */
+export function updateAvailableOptionsRelationships(
+  taskResponsibilities: Record<string, string[]>,
+  taskProductProducers: Record<string, string[]>,
+  taskProductEnhancements: Record<string, string[]>
+): void {
+  const availableOptionsPath = path.join(__dirname, '../available_options.json');
+  let currentOptions: Record<string, any> = {};
+  
+  if (fs.existsSync(availableOptionsPath)) {
+    try {
+      const content = fs.readFileSync(availableOptionsPath, 'utf-8');
+      currentOptions = JSON.parse(content);
+    } catch (error) {
+      currentOptions = {};
+    }
+  }
+  
+  // Add the relationship mappings
+  currentOptions['task_responsibilities'] = taskResponsibilities;
+  currentOptions['taskProduct_producers'] = taskProductProducers;
+  currentOptions['taskProduct_enhancements'] = taskProductEnhancements;
+  
+  fs.writeFileSync(availableOptionsPath, JSON.stringify(currentOptions, null, 2), 'utf-8');
+}
+

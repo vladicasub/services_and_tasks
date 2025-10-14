@@ -16,7 +16,11 @@ import {
   reportValidationErrors,
   initializeAvailableOptions,
   updateAvailableOptions,
-  extractUniqueValues
+  extractUniqueValues,
+  buildTaskResponsibilities,
+  buildTaskProductProducers,
+  buildTaskProductEnhancements,
+  updateAvailableOptionsRelationships
 } from './validation';
 import { TransformSummary } from './types';
 
@@ -193,6 +197,10 @@ async function transform_from_table(filePaths: string[]): Promise<void> {
     let successCount = 0;
     let errorCount = 0;
     
+    // Store data for relationship building
+    let taskProductsData: any[] = [];
+    let tasksData: any[] = [];
+    
     console.log('─'.repeat(80));
     
     for (const filePath of filePaths) {
@@ -225,6 +233,13 @@ async function transform_from_table(filePaths: string[]): Promise<void> {
         }
         
         const { rows } = readExcelData(worksheet);
+        
+        // Store data for relationship building
+        if (fileBaseName === 'blueprint_task_products') {
+          taskProductsData = rows;
+        } else if (fileBaseName === 'blueprint_tasks') {
+          tasksData = rows;
+        }
         
         // Validate if required
         if (config.validate) {
@@ -262,6 +277,26 @@ async function transform_from_table(filePaths: string[]): Promise<void> {
         console.log(`❌ ${fileName} - Error: ${error}`);
         errorCount++;
       }
+    }
+    
+    // Build relationships after all files are processed
+    if (taskProductsData.length > 0 && tasksData.length > 0) {
+      console.log('─'.repeat(80));
+      console.log('🔗 Building relationships...');
+      
+      const taskResponsibilities = buildTaskResponsibilities(tasksData);
+      const taskProductProducers = buildTaskProductProducers(tasksData);
+      const taskProductEnhancements = buildTaskProductEnhancements(taskProductsData);
+      
+      updateAvailableOptionsRelationships(
+        taskResponsibilities,
+        taskProductProducers,
+        taskProductEnhancements
+      );
+      
+      console.log(`   ✅ Built ${Object.keys(taskResponsibilities).length} task → responsibilities mappings`);
+      console.log(`   ✅ Built ${Object.keys(taskProductProducers).length} taskProduct → producers mappings`);
+      console.log(`   ✅ Built ${Object.keys(taskProductEnhancements).length} taskProduct → enhancements mappings`);
     }
     
     console.log('─'.repeat(80));
