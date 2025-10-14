@@ -5,10 +5,15 @@
     "Photo-enhancement",
     "Staging"
   ],
+  "enhancement-order": [
+    "Blur",
+    "Declutter",
+    "Photo-enhancement",
+    "Staging"
+  ],
   "responsibility_options": [
     "IM-operators",
     "IM-scanner",
-    "IM_operators",
     "auto",
     "client"
   ],

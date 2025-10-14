@@ -101,6 +101,9 @@ async function transform_from_json(dirPath: string): Promise<void> {
       process.exit(1);
     }
     
+    // Load field options for validation
+    const fieldOptions = loadFieldOptions();
+    
     // Create output directory if it doesn't exist
     const outputDir = path.join(resolvedPath, 'outputs');
     if (!fs.existsSync(outputDir)) {
@@ -147,6 +150,60 @@ async function transform_from_json(dirPath: string): Promise<void> {
         // Handle empty or invalid JSON
         if (!jsonData || (Array.isArray(jsonData) && jsonData.length === 0)) {
           console.log(`⚠️  ${file} - Empty JSON, skipping`);
+          errorCount++;
+          continue;
+        }
+        
+        // Convert to array for validation
+        const dataArray = Array.isArray(jsonData) ? jsonData : [jsonData];
+        
+        // Validate data for typos BEFORE flattening
+        const validationErrors = validateData(dataArray, fieldOptions);
+        
+        if (validationErrors.length > 0) {
+          // Report validation errors verbosely
+          console.log(`❌ ${file} - VALIDATION FAILED - Typos detected!`);
+          console.log('');
+          console.log('  ╔═══════════════════════════════════════════════════════════════════════╗');
+          console.log('  ║                         TYPO DETECTION REPORT                         ║');
+          console.log('  ╚═══════════════════════════════════════════════════════════════════════╝');
+          console.log('');
+          
+          validationErrors.forEach((error, idx) => {
+            console.log(`  Typo #${idx + 1}:`);
+            console.log(`  ├─ Location: Record ${error.row - 1} (JSON array index ${error.row - 2})`);
+            console.log(`  ├─ Field: "${error.field}"`);
+            console.log(`  ├─ Invalid value: "${error.value}"`);
+            console.log(`  ├─ Valid options (${error.validOptions.length}):`);
+            
+            // Show valid options, grouped if many
+            if (error.validOptions.length <= 10) {
+              error.validOptions.forEach(opt => {
+                console.log(`  │    • ${opt}`);
+              });
+            } else {
+              error.validOptions.slice(0, 5).forEach(opt => {
+                console.log(`  │    • ${opt}`);
+              });
+              console.log(`  │    ... and ${error.validOptions.length - 5} more options`);
+            }
+            
+            // Suggest close matches
+            const suggestions = findClosestMatches(error.value, error.validOptions, 3);
+            if (suggestions.length > 0) {
+              console.log(`  └─ Did you mean:`);
+              suggestions.forEach(sugg => {
+                console.log(`       → "${sugg}"`);
+              });
+            } else {
+              console.log(`  └─ No close matches found`);
+            }
+            console.log('');
+          });
+          
+          console.log(`  Total typos found: ${validationErrors.length}`);
+          console.log(`  ⚠️  File transformation aborted due to validation errors.`);
+          console.log('');
           errorCount++;
           continue;
         }
@@ -215,6 +272,123 @@ async function transform_from_json(dirPath: string): Promise<void> {
 }
 
 /**
+ * Calculate Levenshtein distance between two strings
+ */
+function levenshteinDistance(str1: string, str2: string): number {
+  const len1 = str1.length;
+  const len2 = str2.length;
+  const matrix: number[][] = [];
+
+  for (let i = 0; i <= len1; i++) {
+    matrix[i] = [i];
+  }
+
+  for (let j = 0; j <= len2; j++) {
+    matrix[0][j] = j;
+  }
+
+  for (let i = 1; i <= len1; i++) {
+    for (let j = 1; j <= len2; j++) {
+      if (str1[i - 1] === str2[j - 1]) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1, // substitution
+          matrix[i][j - 1] + 1,     // insertion
+          matrix[i - 1][j] + 1      // deletion
+        );
+      }
+    }
+  }
+
+  return matrix[len1][len2];
+}
+
+/**
+ * Find closest matches using Levenshtein distance
+ */
+function findClosestMatches(value: string, options: string[], maxSuggestions: number = 3): string[] {
+  const valueLower = value.toLowerCase();
+  
+  // Calculate distance for each option
+  const distances = options.map(option => ({
+    option,
+    distance: levenshteinDistance(valueLower, option.toLowerCase())
+  }));
+  
+  // Sort by distance
+  distances.sort((a, b) => a.distance - b.distance);
+  
+  // Return top matches that are reasonably close (distance <= 3)
+  return distances
+    .filter(d => d.distance <= 3)
+    .slice(0, maxSuggestions)
+    .map(d => d.option);
+}
+
+/**
+ * Load field options from the configuration file
+ */
+function loadFieldOptions(): Record<string, string[]> {
+  const fieldOptionsPath = path.join(__dirname, '../extras/field_options.json');
+  try {
+    const content = fs.readFileSync(fieldOptionsPath, 'utf-8');
+    return JSON.parse(content);
+  } catch (error) {
+    console.warn(`⚠️  Warning: Could not load field_options.json. Validation disabled.`);
+    return {};
+  }
+}
+
+/**
+ * Validate data against field options
+ * Returns array of validation errors
+ */
+function validateData(rows: any[], fieldOptions: Record<string, string[]>): Array<{
+  row: number;
+  field: string;
+  value: string;
+  validOptions: string[];
+}> {
+  const errors: Array<{
+    row: number;
+    field: string;
+    value: string;
+    validOptions: string[];
+  }> = [];
+  
+  // Fields that should be validated (array fields)
+  const fieldsToValidate = ['inputs', 'outputs', 'enhancement', 'enhancement-order', 'responsibility_options', 'task', 'taskProduct'];
+  
+  rows.forEach((row, rowIndex) => {
+    for (const field of fieldsToValidate) {
+      if (row[field] !== undefined && row[field] !== null && row[field] !== '') {
+        const fieldKey = field.replace(/-/g, '_'); // Handle field name variations
+        const allowedOptions = fieldOptions[field] || fieldOptions[fieldKey];
+        
+        if (allowedOptions && allowedOptions.length > 0) {
+          const values = Array.isArray(row[field]) ? row[field] : [row[field]];
+          
+          for (const value of values) {
+            const trimmedValue = String(value).trim();
+            if (trimmedValue && !allowedOptions.includes(trimmedValue)) {
+              errors.push({
+                row: rowIndex + 2, // +2 because: +1 for 0-index, +1 for header row
+                field: field,
+                value: trimmedValue,
+                validOptions: allowedOptions
+              });
+            }
+          }
+        }
+      }
+    }
+  });
+  
+  return errors;
+}
+
+/**
  * Transform from Table - Convert XLSX files to JSON
  */
 async function transform_from_table(dirPath: string): Promise<void> {
@@ -234,6 +408,9 @@ async function transform_from_table(dirPath: string): Promise<void> {
       console.error(`Error: '${dirPath}' is not a directory`);
       process.exit(1);
     }
+    
+    // Load field options for validation
+    const fieldOptions = loadFieldOptions();
     
     // Create output directory if it doesn't exist
     const outputDir = path.join(resolvedPath, 'outputs');
@@ -303,6 +480,57 @@ async function transform_from_table(dirPath: string): Promise<void> {
           // Unflatten the object to restore arrays
           rows.push(unflattenObject(rowData));
         });
+        
+        // Validate data for typos
+        const validationErrors = validateData(rows, fieldOptions);
+        
+        if (validationErrors.length > 0) {
+          // Report validation errors verbosely
+          console.log(`❌ ${file} - VALIDATION FAILED - Typos detected!`);
+          console.log('');
+          console.log('  ╔═══════════════════════════════════════════════════════════════════════╗');
+          console.log('  ║                         TYPO DETECTION REPORT                         ║');
+          console.log('  ╚═══════════════════════════════════════════════════════════════════════╝');
+          console.log('');
+          
+          validationErrors.forEach((error, idx) => {
+            console.log(`  Typo #${idx + 1}:`);
+            console.log(`  ├─ Location: Row ${error.row} (Excel row ${error.row})`);
+            console.log(`  ├─ Field: "${error.field}"`);
+            console.log(`  ├─ Invalid value: "${error.value}"`);
+            console.log(`  ├─ Valid options (${error.validOptions.length}):`);
+            
+            // Show valid options, grouped if many
+            if (error.validOptions.length <= 10) {
+              error.validOptions.forEach(opt => {
+                console.log(`  │    • ${opt}`);
+              });
+            } else {
+              error.validOptions.slice(0, 5).forEach(opt => {
+                console.log(`  │    • ${opt}`);
+              });
+              console.log(`  │    ... and ${error.validOptions.length - 5} more options`);
+            }
+            
+            // Suggest close matches
+            const suggestions = findClosestMatches(error.value, error.validOptions, 3);
+            if (suggestions.length > 0) {
+              console.log(`  └─ Did you mean:`);
+              suggestions.forEach(sugg => {
+                console.log(`       → "${sugg}"`);
+              });
+            } else {
+              console.log(`  └─ No close matches found`);
+            }
+            console.log('');
+          });
+          
+          console.log(`  Total typos found: ${validationErrors.length}`);
+          console.log(`  ⚠️  File transformation aborted due to validation errors.`);
+          console.log('');
+          errorCount++;
+          continue;
+        }
         
         // Write to JSON file
         fs.writeFileSync(outputPath, JSON.stringify(rows, null, 2), 'utf-8');
