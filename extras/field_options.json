@@ -1,0 +1,57 @@
+{
+  "enhancement": [
+    "Blur",
+    "Declutter",
+    "Photo-enhancement",
+    "Staging"
+  ],
+  "responsibility_options": [
+    "IM-operators",
+    "IM-scanner",
+    "IM_operators",
+    "auto",
+    "client"
+  ],
+  "task": [
+    "Auto HDR Photos",
+    "Blurring",
+    "DSLR Photo Decluttering",
+    "DSLR Photo Retouching",
+    "DSLR Photo Staging",
+    "DSLR Photos",
+    "Data Acquisition",
+    "Declutter",
+    "Dollhouse-building",
+    "Elevation-building",
+    "HDR Photo Blurring",
+    "HDR Photo Decluttering",
+    "HDR Photo Retouching",
+    "HDR Photo Staging",
+    "HDR Photos",
+    "Measurement-tool-building",
+    "Pano Generation",
+    "Photo Capture",
+    "Photo enhancement",
+    "Staging",
+    "Thermo-view-building",
+    "Walkthrough-building",
+    "Walls-and-wall-elements-building",
+    "floorMeasurement-building",
+    "floorplan-building",
+    "geometry-scaffold-building"
+  ],
+  "taskProduct": [
+    "Dollhouse",
+    "Elevation",
+    "Floor-measurements",
+    "Floorplan",
+    "Hdr-images",
+    "Measurement-tool",
+    "Panos",
+    "Thermo-view",
+    "Walkthrough-tour",
+    "Walls-and-wall-elements",
+    "geometry-scaffold",
+    "spin_captures"
+  ]
+}
