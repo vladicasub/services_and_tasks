@@ -1,0 +1,354 @@
+[
+  {
+    "Service": "Pano Blurring",
+    "taskProduct": "Panos",
+    "enhancement": "Blur",
+    "responsibility specification (Task:Responsibility)": "",
+    "transformation specification (taskProduct:task)": "",
+    "enhancement medium specification (enhancement:taskProduct)": "Blur: Panos"
+  },
+  {
+    "Service": "Pano Retouching",
+    "taskProduct": "Panos",
+    "enhancement": "Photo-enhancement",
+    "responsibility specification (Task:Responsibility)": "",
+    "transformation specification (taskProduct:task)": "",
+    "enhancement medium specification (enhancement:taskProduct)": "Photo-enhancement: Panos"
+  },
+  {
+    "Service": "Pano Decluttering",
+    "taskProduct": "Panos",
+    "enhancement": "Declutter",
+    "responsibility specification (Task:Responsibility)": "",
+    "transformation specification (taskProduct:task)": "",
+    "enhancement medium specification (enhancement:taskProduct)": "Declutter: Panos"
+  },
+  {
+    "Service": "Pano Staging",
+    "taskProduct": "Panos",
+    "enhancement": "Staging",
+    "responsibility specification (Task:Responsibility)": "",
+    "transformation specification (taskProduct:task)": "",
+    "enhancement medium specification (enhancement:taskProduct)": "Staging: Panos"
+  },
+  {
+    "Service": "Floor Plan",
+    "taskProduct": "Floorplan",
+    "enhancement": "",
+    "responsibility specification (Task:Responsibility)": "Geometry-building-spins: IM-operators",
+    "transformation specification (taskProduct:task)": "geometry-scaffold:Geometry-building-spins",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "GLA Floor Plan",
+    "taskProduct": "Floorplan",
+    "enhancement": "",
+    "responsibility specification (Task:Responsibility)": "Geometry-building-spins: IM-operators",
+    "transformation specification (taskProduct:task)": "geometry-scaffold:Geometry-building-spins",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "Material Floor Plan",
+    "taskProduct": "Floorplan",
+    "enhancement": "",
+    "responsibility specification (Task:Responsibility)": "Geometry-building-spins: IM-operators",
+    "transformation specification (taskProduct:task)": "geometry-scaffold:Geometry-building-spins",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "Auto Floor Plan",
+    "taskProduct": "Floorplan",
+    "enhancement": "",
+    "responsibility specification (Task:Responsibility)": "Geometry-building-spins: auto",
+    "transformation specification (taskProduct:task)": "geometry-scaffold:Geometry-building-spins",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "Auto GLA Floor Plan",
+    "taskProduct": "Floorplan",
+    "enhancement": "",
+    "responsibility specification (Task:Responsibility)": "Geometry-building-spins: auto",
+    "transformation specification (taskProduct:task)": "geometry-scaffold:Geometry-building-spins",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "Auto Material Floor Plan",
+    "taskProduct": "Floorplan",
+    "enhancement": "",
+    "responsibility specification (Task:Responsibility)": "Geometry-building-spins: auto",
+    "transformation specification (taskProduct:task)": "geometry-scaffold:Geometry-building-spins",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "LiDAR Floor Plan",
+    "taskProduct": "Floorplan",
+    "enhancement": "",
+    "responsibility specification (Task:Responsibility)": "Geometry-building-spins: IM-operators",
+    "transformation specification (taskProduct:task)": "geometry-scaffold:Geometry-building-spins",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "LiDAR GLA Floor Plan",
+    "taskProduct": "Floorplan",
+    "enhancement": "",
+    "responsibility specification (Task:Responsibility)": "Geometry-building-spins: IM-operators",
+    "transformation specification (taskProduct:task)": "geometry-scaffold:Geometry-building-spins",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "LiDAR Material Floor Plan",
+    "taskProduct": "Floorplan",
+    "enhancement": "",
+    "responsibility specification (Task:Responsibility)": "Geometry-building-spins: IM-operators",
+    "transformation specification (taskProduct:task)": "geometry-scaffold:Geometry-building-spins",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "Auto LiDAR Floor Plan",
+    "taskProduct": "Floorplan",
+    "enhancement": "",
+    "responsibility specification (Task:Responsibility)": "Geometry-building-spins: auto",
+    "transformation specification (taskProduct:task)": "geometry-scaffold:Geometry-building-spins",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "Auto LiDAR GLA Floor Plan",
+    "taskProduct": "Floorplan",
+    "enhancement": "",
+    "responsibility specification (Task:Responsibility)": "Geometry-building-spins: auto",
+    "transformation specification (taskProduct:task)": "geometry-scaffold:Geometry-building-spins",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "Auto LiDAR Material Floor Plan",
+    "taskProduct": "Floorplan",
+    "enhancement": "",
+    "responsibility specification (Task:Responsibility)": "Geometry-building-spins: auto",
+    "transformation specification (taskProduct:task)": "geometry-scaffold:Geometry-building-spins",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "RoomPlan Floor Plan",
+    "taskProduct": "Floorplan",
+    "enhancement": "",
+    "responsibility specification (Task:Responsibility)": "Geometry-building-roomPlan: IM-operators",
+    "transformation specification (taskProduct:task)": "geometry-scaffold:Geometry-building-roomPlan",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "RoomPlan GLA Floor Plan",
+    "taskProduct": "Floorplan",
+    "enhancement": "",
+    "responsibility specification (Task:Responsibility)": "Geometry-building-roomPlan: IM-operators",
+    "transformation specification (taskProduct:task)": "geometry-scaffold:Geometry-building-roomPlan",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "Floor Measurements & Data",
+    "taskProduct": "Floor-measurements",
+    "enhancement": "",
+    "responsibility specification (Task:Responsibility)": "",
+    "transformation specification (taskProduct:task)": "",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "Walls, Floors, Ceilings & Wall Element Data",
+    "taskProduct": "Walls-and-wall-elements",
+    "enhancement": "",
+    "responsibility specification (Task:Responsibility)": "",
+    "transformation specification (taskProduct:task)": "",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "Property Elevation Data",
+    "taskProduct": "Elevation",
+    "enhancement": "",
+    "responsibility specification (Task:Responsibility)": "",
+    "transformation specification (taskProduct:task)": "",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "Walkthrough Tour",
+    "taskProduct": "Walkthrough-tour",
+    "enhancement": "",
+    "responsibility specification (Task:Responsibility)": "Geometry-building-spins: IM-operators",
+    "transformation specification (taskProduct:task)": "",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "Auto Walkthrough Tour",
+    "taskProduct": "Walkthrough-tour",
+    "enhancement": "",
+    "responsibility specification (Task:Responsibility)": "Geometry-building-spins: auto",
+    "transformation specification (taskProduct:task)": "",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "Blurred Walkthrough Tour",
+    "taskProduct": "Walkthrough-tour",
+    "enhancement": "Blur",
+    "responsibility specification (Task:Responsibility)": "Geometry-building-spins: IM-operators",
+    "transformation specification (taskProduct:task)": "",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "Retouched Walkthrough Tour",
+    "taskProduct": "Walkthrough-tour",
+    "enhancement": "Photo-enhancement",
+    "responsibility specification (Task:Responsibility)": "Geometry-building-spins: IM-operators",
+    "transformation specification (taskProduct:task)": "",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "Decluttered Walkthrough Tour",
+    "taskProduct": "Walkthrough-tour",
+    "enhancement": "Declutter",
+    "responsibility specification (Task:Responsibility)": "Geometry-building-spins: IM-operators",
+    "transformation specification (taskProduct:task)": "",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "Staged Walkthrough Tour",
+    "taskProduct": "Walkthrough-tour",
+    "enhancement": "Staging",
+    "responsibility specification (Task:Responsibility)": "Geometry-building-spins: IM-operators",
+    "transformation specification (taskProduct:task)": "",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "Measurement Tool",
+    "taskProduct": "Measurement-tool",
+    "enhancement": "",
+    "responsibility specification (Task:Responsibility)": "",
+    "transformation specification (taskProduct:task)": "",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "Thermal View",
+    "taskProduct": "Thermo-view",
+    "enhancement": "",
+    "responsibility specification (Task:Responsibility)": "",
+    "transformation specification (taskProduct:task)": "",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "Flythrough",
+    "taskProduct": "Flythrough",
+    "enhancement": "",
+    "responsibility specification (Task:Responsibility)": "",
+    "transformation specification (taskProduct:task)": "",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "Walkthrough Video",
+    "taskProduct": "Walkthrough-video",
+    "enhancement": "",
+    "responsibility specification (Task:Responsibility)": "",
+    "transformation specification (taskProduct:task)": "",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "Dollhouse",
+    "taskProduct": "Dollhouse",
+    "enhancement": "",
+    "responsibility specification (Task:Responsibility)": "Geometry-building-spins: IM-operators",
+    "transformation specification (taskProduct:task)": "",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "Auto Dollhouse",
+    "taskProduct": "Dollhouse",
+    "enhancement": "",
+    "responsibility specification (Task:Responsibility)": "Geometry-building-spins: auto",
+    "transformation specification (taskProduct:task)": "",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "HDR Photos",
+    "taskProduct": "Hdr-images",
+    "enhancement": "",
+    "responsibility specification (Task:Responsibility)": "Photo-Capture: IM-operators",
+    "transformation specification (taskProduct:task)": "Panos:Pano-Generation-spins",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "Auto HDR Photos",
+    "taskProduct": "Hdr-images",
+    "enhancement": "",
+    "responsibility specification (Task:Responsibility)": "Photo-Capture: auto",
+    "transformation specification (taskProduct:task)": "Panos:Pano-Generation-spins",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "HDR Photo Blurring",
+    "taskProduct": "Hdr-images",
+    "enhancement": "Blur",
+    "responsibility specification (Task:Responsibility)": "Photo-Capture: IM-operators",
+    "transformation specification (taskProduct:task)": "Panos:Pano-Generation-spins",
+    "enhancement medium specification (enhancement:taskProduct)": "Blur: Panos"
+  },
+  {
+    "Service": "HDR Photo Retouching",
+    "taskProduct": "Hdr-images",
+    "enhancement": "Photo-enhancement",
+    "responsibility specification (Task:Responsibility)": "Photo-Capture: IM-operators",
+    "transformation specification (taskProduct:task)": "Panos:Pano-Generation-spins",
+    "enhancement medium specification (enhancement:taskProduct)": "Photo-enhancement: Hdr-images"
+  },
+  {
+    "Service": "HDR Photo Decluttering",
+    "taskProduct": "Hdr-images",
+    "enhancement": "Declutter",
+    "responsibility specification (Task:Responsibility)": "Photo-Capture: IM-operators",
+    "transformation specification (taskProduct:task)": "Panos:Pano-Generation-spins",
+    "enhancement medium specification (enhancement:taskProduct)": "Declutter: Panos"
+  },
+  {
+    "Service": "HDR Photo Staging",
+    "taskProduct": "Hdr-images",
+    "enhancement": "",
+    "responsibility specification (Task:Responsibility)": "Photo-Capture: IM-operators",
+    "transformation specification (taskProduct:task)": "Panos:Pano-Generation-spins",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "Curbshot Photo Retouching",
+    "taskProduct": "Hdr-images",
+    "enhancement": "Photo-enhancement",
+    "responsibility specification (Task:Responsibility)": "",
+    "transformation specification (taskProduct:task)": "Panos:Pano-Generation-spins",
+    "enhancement medium specification (enhancement:taskProduct)": "Photo-enhancement: Hdr-images"
+  },
+  {
+    "Service": "DSLR Photos",
+    "taskProduct": "Hdr-images",
+    "enhancement": "",
+    "responsibility specification (Task:Responsibility)": "",
+    "transformation specification (taskProduct:task)": "Panos:Pano-Generation-dslr",
+    "enhancement medium specification (enhancement:taskProduct)": ""
+  },
+  {
+    "Service": "DSLR Photo Retouching",
+    "taskProduct": "Hdr-images",
+    "enhancement": "Photo-enhancement",
+    "responsibility specification (Task:Responsibility)": "",
+    "transformation specification (taskProduct:task)": "Panos:Pano-Generation-dslr",
+    "enhancement medium specification (enhancement:taskProduct)": "Photo-enhancement: Hdr-images"
+  },
+  {
+    "Service": "DSLR Photo Decluttering",
+    "taskProduct": "Hdr-images",
+    "enhancement": "Declutter",
+    "responsibility specification (Task:Responsibility)": "",
+    "transformation specification (taskProduct:task)": "Panos:Pano-Generation-dslr",
+    "enhancement medium specification (enhancement:taskProduct)": "Declutter: Hdr-images"
+  },
+  {
+    "Service": "DSLR Photo Staging",
+    "taskProduct": "Hdr-images",
+    "enhancement": "Staging",
+    "responsibility specification (Task:Responsibility)": "",
+    "transformation specification (taskProduct:task)": "Panos:Pano-Generation-dslr",
+    "enhancement medium specification (enhancement:taskProduct)": "Staging: Hdr-images"
+  }
+]

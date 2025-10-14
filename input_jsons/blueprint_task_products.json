@@ -1,0 +1,109 @@
+[
+  {
+    "taskProduct": "spin_captures",
+    "enhancement-order": []
+  },
+  {
+    "taskProduct": "spin_lidar",
+    "enhancement-order": []
+  },
+  {
+    "taskProduct": "spin_thermo",
+    "enhancement-order": []
+  },
+  {
+    "taskProduct": "dslr_captures",
+    "enhancement-order": []
+  },
+  {
+    "taskProduct": "roomplan-FP",
+    "enhancement-order": []
+  },
+  {
+    "taskProduct": "preconInput",
+    "enhancement-order": []
+  },
+  {
+    "taskProduct": "Panos",
+    "enhancement-order": [
+      "Photo-enhancement",
+      "Blur",
+      "Staging",
+      "Declutter"
+    ]
+  },
+  {
+    "taskProduct": "geometry-scaffold",
+    "enhancement-order": []
+  },
+  {
+    "taskProduct": "Floorplan",
+    "enhancement-order": []
+  },
+  {
+    "taskProduct": "Floor-measurements",
+    "enhancement-order": []
+  },
+  {
+    "taskProduct": "Walls-and-wall-elements",
+    "enhancement-order": []
+  },
+  {
+    "taskProduct": "Elevation",
+    "enhancement-order": []
+  },
+  {
+    "taskProduct": "Walkthrough-tour",
+    "enhancement-order": [
+      "Photo-enhancement",
+      "Blur",
+      "Staging",
+      "Declutter"
+    ]
+  },
+  {
+    "taskProduct": "Measurement-tool",
+    "enhancement-order": []
+  },
+  {
+    "taskProduct": "Thermo-view",
+    "enhancement-order": []
+  },
+  {
+    "taskProduct": "Dollhouse",
+    "enhancement-order": []
+  },
+  {
+    "taskProduct": "Flythrough-path",
+    "enhancement-order": [
+      "Staging"
+    ]
+  },
+  {
+    "taskProduct": "Flythrough",
+    "enhancement-order": [
+      "Photo-enhancement",
+      "Blur",
+      "Staging",
+      "Declutter"
+    ]
+  },
+  {
+    "taskProduct": "Walkthrough-video",
+    "enhancement-order": [
+      "Photo-enhancement",
+      "Blur",
+      "Staging",
+      "Declutter"
+    ]
+  },
+  {
+    "taskProduct": "Hdr-images",
+    "enhancement-order": [
+      "Photo-enhancement",
+      "Blur",
+      "Staging",
+      "Declutter"
+    ]
+  }
+]

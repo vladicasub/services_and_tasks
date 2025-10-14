@@ -1,0 +1,356 @@
+[
+  {
+    "task": "Data-Acquisition",
+    "inputs": [],
+    "outputs": [
+      "spin_captures",
+      "dslr_captures",
+      "spin_lidar",
+      "spin_thermo",
+      "roomplan-FP"
+    ],
+    "enhancement": "",
+    "responsibility_options": [
+      "IM-scanner",
+      "client"
+    ]
+  },
+  {
+    "task": "Pano-Generation-spins",
+    "inputs": [
+      "spin_captures"
+    ],
+    "outputs": [
+      "Panos"
+    ],
+    "enhancement": "",
+    "responsibility_options": [
+      "auto"
+    ]
+  },
+  {
+    "task": "Pano-Generation-dslr",
+    "inputs": [
+      "dslr_captures"
+    ],
+    "outputs": [
+      "Panos"
+    ],
+    "enhancement": "",
+    "responsibility_options": [
+      "auto"
+    ]
+  },
+  {
+    "task": "Geometry-building-spins",
+    "inputs": [
+      "Panos"
+    ],
+    "outputs": [
+      "geometry-scaffold"
+    ],
+    "enhancement": "",
+    "responsibility_options": [
+      "IM-operators",
+      "auto"
+    ]
+  },
+  {
+    "task": "Geometry-building-roomPlan",
+    "inputs": [
+      "roomplan-FP"
+    ],
+    "outputs": [
+      "geometry-scaffold"
+    ],
+    "enhancement": "",
+    "responsibility_options": [
+      "IM-operators",
+      "client"
+    ]
+  },
+  {
+    "task": "Geometry-building-precon",
+    "inputs": [
+      "preconInput"
+    ],
+    "outputs": [
+      "geometry-scaffold"
+    ],
+    "enhancement": "",
+    "responsibility_options": [
+      "IM-operators"
+    ]
+  },
+  {
+    "task": "floorplan-building",
+    "inputs": [
+      "geometry-scaffold"
+    ],
+    "outputs": [
+      "Floorplan"
+    ],
+    "enhancement": "",
+    "responsibility_options": [
+      "auto"
+    ]
+  },
+  {
+    "task": "floorMeasurement-building",
+    "inputs": [
+      "geometry-scaffold"
+    ],
+    "outputs": [
+      "Floor-measurements"
+    ],
+    "enhancement": "",
+    "responsibility_options": [
+      "auto"
+    ]
+  },
+  {
+    "task": "Walls-and-wall-elements-building",
+    "inputs": [
+      "geometry-scaffold"
+    ],
+    "outputs": [
+      "Walls-and-wall-elements"
+    ],
+    "enhancement": "",
+    "responsibility_options": [
+      "auto"
+    ]
+  },
+  {
+    "task": "Elevation-building",
+    "inputs": [
+      "geometry-scaffold"
+    ],
+    "outputs": [
+      "Elevation"
+    ],
+    "enhancement": "",
+    "responsibility_options": [
+      "auto"
+    ]
+  },
+  {
+    "task": "Walkthrough-building",
+    "inputs": [
+      "geometry-scaffold",
+      "Panos"
+    ],
+    "outputs": [
+      "Walkthrough-tour"
+    ],
+    "enhancement": "",
+    "responsibility_options": [
+      "auto"
+    ]
+  },
+  {
+    "task": "Measurement-tool-building",
+    "inputs": [
+      "Walkthrough-tour"
+    ],
+    "outputs": [
+      "Measurement-tool"
+    ],
+    "enhancement": "",
+    "responsibility_options": [
+      "auto"
+    ]
+  },
+  {
+    "task": "Thermo-view-building",
+    "inputs": [
+      "Walkthrough-tour"
+    ],
+    "outputs": [
+      "Thermo-view"
+    ],
+    "enhancement": "",
+    "responsibility_options": [
+      "auto"
+    ]
+  },
+  {
+    "task": "Dollhouse-building",
+    "inputs": [
+      "Walkthrough-tour",
+      "geometry-scaffold",
+      "Panos"
+    ],
+    "outputs": [
+      "Dollhouse"
+    ],
+    "enhancement": "",
+    "responsibility_options": [
+      "auto"
+    ]
+  },
+  {
+    "task": "Flythrough-path-creation",
+    "inputs": [
+      "Walkthrough-tour"
+    ],
+    "outputs": [
+      "Flythrough-path"
+    ],
+    "enhancement": "",
+    "responsibility_options": [
+      "IM-operators"
+    ]
+  },
+  {
+    "task": "Flythrough-generation",
+    "inputs": [
+      "Walkthrough-tour",
+      "Flythrough-path"
+    ],
+    "outputs": [
+      "Flythrough"
+    ],
+    "enhancement": "",
+    "responsibility_options": [
+      "auto"
+    ]
+  },
+  {
+    "task": "Walkthrough-video-generation",
+    "inputs": [
+      "Walkthrough-tour",
+      "Flythrough-path"
+    ],
+    "outputs": [
+      "Walkthrough-video"
+    ],
+    "enhancement": "",
+    "responsibility_options": [
+      "auto"
+    ]
+  },
+  {
+    "task": "Photo-Capture",
+    "inputs": [
+      "Panos",
+      "geometry-scaffold"
+    ],
+    "outputs": [
+      "Hdr-images"
+    ],
+    "enhancement": "",
+    "responsibility_options": [
+      "client",
+      "auto",
+      "IM-operators"
+    ]
+  },
+  {
+    "task": "Panos-Blurring",
+    "inputs": [
+      "Panos"
+    ],
+    "outputs": [
+      "Panos"
+    ],
+    "enhancement": "Blur",
+    "responsibility_options": [
+      "client",
+      "IM-operators",
+      "auto"
+    ]
+  },
+  {
+    "task": "HDR-Photo-Blurring",
+    "inputs": [
+      "Hdr-images"
+    ],
+    "outputs": [
+      "Hdr-images"
+    ],
+    "enhancement": "Blur",
+    "responsibility_options": [
+      "IM-operators"
+    ]
+  },
+  {
+    "task": "Panos-Photo-enhancement",
+    "inputs": [
+      "Panos"
+    ],
+    "outputs": [
+      "Panos"
+    ],
+    "enhancement": "Photo-enhancement",
+    "responsibility_options": [
+      "IM-operators",
+      "auto"
+    ]
+  },
+  {
+    "task": "HDR-Photo-enhancement",
+    "inputs": [
+      "Hdr-images"
+    ],
+    "outputs": [
+      "Hdr-images"
+    ],
+    "enhancement": "Photo-enhancement",
+    "responsibility_options": [
+      "IM-operators"
+    ]
+  },
+  {
+    "task": "Panos-Decluttering",
+    "inputs": [
+      "Panos"
+    ],
+    "outputs": [
+      "Panos"
+    ],
+    "enhancement": "Declutter",
+    "responsibility_options": [
+      "IM-operators"
+    ]
+  },
+  {
+    "task": "HDR-Photo-Decluttering",
+    "inputs": [
+      "Hdr-images"
+    ],
+    "outputs": [
+      "Hdr-images"
+    ],
+    "enhancement": "Declutter",
+    "responsibility_options": [
+      "IM-operators"
+    ]
+  },
+  {
+    "task": "Panos-Staging",
+    "inputs": [
+      "Panos"
+    ],
+    "outputs": [
+      "Panos"
+    ],
+    "enhancement": "Staging",
+    "responsibility_options": [
+      "IM-operators"
+    ]
+  },
+  {
+    "task": "HDR-Photo-Staging",
+    "inputs": [
+      "Hdr-images"
+    ],
+    "outputs": [
+      "Hdr-images"
+    ],
+    "enhancement": "Staging",
+    "responsibility_options": [
+      "IM-operators"
+    ]
+  }
+]
