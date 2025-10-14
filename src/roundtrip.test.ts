@@ -1,25 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import ExcelJS from 'exceljs';
-import { flattenObject, unflattenObject } from './index';
-
-/**
- * Helper function to extract plain text from Excel cell value
- * Handles richText objects that Excel creates for formatted cells
- */
-function extractCellText(cellValue: any): string {
-  if (cellValue === null || cellValue === undefined) {
-    return '';
-  }
-  
-  // Handle richText objects (formatted cells in Excel)
-  if (typeof cellValue === 'object' && cellValue.richText && Array.isArray(cellValue.richText)) {
-    return cellValue.richText.map((rt: any) => rt.text || '').join('');
-  }
-  
-  // Handle regular values
-  return String(cellValue);
-}
+import { flattenObject, unflattenObject } from './transforms';
+import { extractCellText } from './utils';
 
 // Discover files dynamically
 const inputJsonsDir = path.join(__dirname, '../input_jsons');
@@ -97,6 +80,42 @@ function normalizeJson(data: any): any {
 }
 
 /**
+ * Helper function to read Excel data with proper cell text extraction
+ */
+function readExcelWorksheet(worksheet: ExcelJS.Worksheet): any[] {
+  const headers: string[] = [];
+  const rows: any[] = [];
+  
+  // Get headers from first row
+  const headerRow = worksheet.getRow(1);
+  headerRow.eachCell({ includeEmpty: false }, (cell, colNumber) => {
+    headers[colNumber - 1] = String(cell.value);
+  });
+  
+  const maxCol = headers.length;
+  
+  // Get data rows
+  worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+    if (rowNumber === 1) return; // Skip header row
+    
+    const rowData: any = {};
+    // Explicitly iterate over all column indices to catch empty cells
+    for (let colIdx = 1; colIdx <= maxCol; colIdx++) {
+      const header = headers[colIdx - 1];
+      if (header) {
+        const cell = row.getCell(colIdx);
+        rowData[header] = extractCellText(cell.value);
+      }
+    }
+    
+    // Unflatten the object to restore arrays
+    rows.push(unflattenObject(rowData));
+  });
+  
+  return rows;
+}
+
+/**
  * Perform JSON → XLSX → JSON roundtrip
  */
 async function performJsonRoundtrip(jsonData: any[]): Promise<any[]> {
@@ -136,34 +155,7 @@ async function performJsonRoundtrip(jsonData: any[]): Promise<any[]> {
   await readWorkbook.xlsx.readFile(xlsxPath);
   
   const readWorksheet = readWorkbook.worksheets[0];
-  const rows: any[] = [];
-  const readHeaders: string[] = [];
-  
-  // Get headers from first row
-  const readHeaderRow = readWorksheet.getRow(1);
-  readHeaderRow.eachCell({ includeEmpty: false }, (cell, colNumber) => {
-    readHeaders[colNumber - 1] = String(cell.value);
-  });
-  
-  const maxCol = readHeaders.length;
-  
-  // Get data rows
-  readWorksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
-    if (rowNumber === 1) return; // Skip header row
-    
-    const rowData: any = {};
-    // Explicitly iterate over all column indices to catch empty cells
-    for (let colIdx = 1; colIdx <= maxCol; colIdx++) {
-      const header = readHeaders[colIdx - 1];
-      if (header) {
-        const cell = row.getCell(colIdx);
-        rowData[header] = extractCellText(cell.value);
-      }
-    }
-    
-    // Unflatten the object to restore arrays
-    rows.push(unflattenObject(rowData));
-  });
+  const rows = readExcelWorksheet(readWorksheet);
   
   return rows;
 }
@@ -181,30 +173,7 @@ async function performXlsxRoundtrip(xlsxPath: string): Promise<any[][]> {
   const originalWorksheet = originalWorkbook.worksheets[0];
   
   // Extract original data
-  const originalData: any[] = [];
-  const originalHeaders: string[] = [];
-  
-  const originalHeaderRow = originalWorksheet.getRow(1);
-  originalHeaderRow.eachCell({ includeEmpty: false }, (cell, colNumber) => {
-    originalHeaders[colNumber - 1] = String(cell.value);
-  });
-  
-  const maxColOriginal = originalHeaders.length;
-  
-  originalWorksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
-    if (rowNumber === 1) return;
-    
-    const rowData: any = {};
-    // Explicitly iterate over all column indices to catch empty cells
-    for (let colIdx = 1; colIdx <= maxColOriginal; colIdx++) {
-      const header = originalHeaders[colIdx - 1];
-      if (header) {
-        const cell = row.getCell(colIdx);
-        rowData[header] = extractCellText(cell.value);
-      }
-    }
-    originalData.push(unflattenObject(rowData));
-  });
+  const originalData = readExcelWorksheet(originalWorksheet);
   
   // Step 2: Convert to JSON (write to file)
   fs.writeFileSync(jsonPath, JSON.stringify(originalData, null, 2), 'utf-8');
@@ -240,30 +209,7 @@ async function performXlsxRoundtrip(xlsxPath: string): Promise<any[][]> {
   await finalWorkbook.xlsx.readFile(xlsxRoundtripPath);
   const finalWorksheet = finalWorkbook.worksheets[0];
   
-  const finalData: any[] = [];
-  const finalHeaders: string[] = [];
-  
-  const finalHeaderRow = finalWorksheet.getRow(1);
-  finalHeaderRow.eachCell({ includeEmpty: false }, (cell, colNumber) => {
-    finalHeaders[colNumber - 1] = String(cell.value);
-  });
-  
-  const maxColFinal = finalHeaders.length;
-  
-  finalWorksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
-    if (rowNumber === 1) return;
-    
-    const rowData: any = {};
-    // Explicitly iterate over all column indices to catch empty cells
-    for (let colIdx = 1; colIdx <= maxColFinal; colIdx++) {
-      const header = finalHeaders[colIdx - 1];
-      if (header) {
-        const cell = row.getCell(colIdx);
-        rowData[header] = extractCellText(cell.value);
-      }
-    }
-    finalData.push(unflattenObject(rowData));
-  });
+  const finalData = readExcelWorksheet(finalWorksheet);
   
   return [originalData, finalData];
 }
