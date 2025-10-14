@@ -21,7 +21,9 @@ import {
   buildTaskResponsibilities,
   buildTaskProductProducers,
   buildTaskProductEnhancements,
-  updateAvailableOptionsRelationships
+  updateAvailableOptionsRelationships,
+  buildServiceSpecifications,
+  updateAvailableOptionsServiceSpecs
 } from './validation';
 import { TransformSummary } from './types';
 
@@ -101,6 +103,7 @@ async function transform_from_json(filePaths: string[], stepMode: boolean = fals
     // Store data for relationship building and validation
     let taskProductsData: any[] = [];
     let tasksData: any[] = [];
+    let servicesData: any[] = [];
     
     console.log('─'.repeat(80));
     
@@ -148,6 +151,8 @@ async function transform_from_json(filePaths: string[], stepMode: boolean = fals
           taskProductsData = dataArray;
         } else if (fileBaseName === 'blueprint_tasks') {
           tasksData = dataArray;
+        } else if (fileBaseName === 'blueprint_services') {
+          servicesData = dataArray;
         }
         
         // Validate if required
@@ -209,6 +214,17 @@ async function transform_from_json(filePaths: string[], stepMode: boolean = fals
         // Build relationships if we just finished processing blueprint_tasks
         buildAndSaveRelationshipsAfterTasks(fileBaseName, taskProductsData, tasksData);
         
+        // Build service specifications if we just finished processing blueprint_services
+        if (fileBaseName === 'blueprint_services' && servicesData.length > 0) {
+          console.log('─'.repeat(80));
+          console.log('📋 Building service specifications...');
+          
+          const serviceSpecs = buildServiceSpecifications(servicesData);
+          updateAvailableOptionsServiceSpecs(serviceSpecs);
+          
+          console.log(`   ✅ Built ${Object.keys(serviceSpecs).length} service specifications`);
+        }
+        
         // Wait for keypress if step mode is enabled
         if (stepMode) {
           await waitForKeypress();
@@ -266,6 +282,7 @@ async function transform_from_table(filePaths: string[], stepMode: boolean = fal
     // Store data for relationship building
     let taskProductsData: any[] = [];
     let tasksData: any[] = [];
+    let servicesData: any[] = [];
     
     console.log('─'.repeat(80));
     
@@ -305,6 +322,8 @@ async function transform_from_table(filePaths: string[], stepMode: boolean = fal
           taskProductsData = rows;
         } else if (fileBaseName === 'blueprint_tasks') {
           tasksData = rows;
+        } else if (fileBaseName === 'blueprint_services') {
+          servicesData = rows;
         }
         
         // Validate if required
@@ -345,6 +364,17 @@ async function transform_from_table(filePaths: string[], stepMode: boolean = fal
         
         // Build relationships if we just finished processing blueprint_tasks
         buildAndSaveRelationshipsAfterTasks(fileBaseName, taskProductsData, tasksData);
+        
+        // Build service specifications if we just finished processing blueprint_services
+        if (fileBaseName === 'blueprint_services' && servicesData.length > 0) {
+          console.log('─'.repeat(80));
+          console.log('📋 Building service specifications...');
+          
+          const serviceSpecs = buildServiceSpecifications(servicesData);
+          updateAvailableOptionsServiceSpecs(serviceSpecs);
+          
+          console.log(`   ✅ Built ${Object.keys(serviceSpecs).length} service specifications`);
+        }
         
         // Wait for keypress if step mode is enabled
         if (stepMode) {

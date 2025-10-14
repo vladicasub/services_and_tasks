@@ -578,3 +578,50 @@ export function updateAvailableOptionsRelationships(
   fs.writeFileSync(availableOptionsPath, JSON.stringify(currentOptions, null, 2), 'utf-8');
 }
 
+/**
+ * Build service specifications mapping from services data
+ * @param servicesData - Array of service records
+ * @returns Record mapping each service name to its full specification
+ */
+export function buildServiceSpecifications(servicesData: any[]): Record<string, any> {
+  const serviceSpecs: Record<string, any> = {};
+  
+  servicesData.forEach((service: any) => {
+    const serviceName = service.Service;
+    if (serviceName) {
+      serviceSpecs[serviceName] = {
+        taskProduct: service.taskProduct || null,
+        enhancement: service.enhancement || null,
+        'responsibility specification (Task:Responsibility)': service['responsibility specification (Task:Responsibility)'] || null,
+        'transformation specification (taskProduct:task)': service['transformation specification (taskProduct:task)'] || null,
+        'enhancement medium specification (enhancement:taskProduct)': service['enhancement medium specification (enhancement:taskProduct)'] || null
+      };
+    }
+  });
+  
+  return serviceSpecs;
+}
+
+/**
+ * Update available_options.json with service specifications
+ * @param serviceSpecifications - Service specifications mapping
+ */
+export function updateAvailableOptionsServiceSpecs(serviceSpecifications: Record<string, any>): void {
+  const availableOptionsPath = path.join(__dirname, '../available_options.json');
+  let currentOptions: Record<string, any> = {};
+  
+  if (fs.existsSync(availableOptionsPath)) {
+    try {
+      const content = fs.readFileSync(availableOptionsPath, 'utf-8');
+      currentOptions = JSON.parse(content);
+    } catch (error) {
+      currentOptions = {};
+    }
+  }
+  
+  // Add the service specifications
+  currentOptions['service_specifications'] = serviceSpecifications;
+  
+  fs.writeFileSync(availableOptionsPath, JSON.stringify(currentOptions, null, 2), 'utf-8');
+}
+
