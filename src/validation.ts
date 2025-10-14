@@ -80,26 +80,19 @@ export function findClosestMatches(value: string, options: string[], maxSuggesti
  * @returns Object mapping field names to allowed values
  */
 export function loadFieldOptions(): Record<string, string[]> {
-  // First try to load available_options.json (dynamically built during runtime)
   const availableOptionsPath = path.join(__dirname, '../available_options.json');
   if (fs.existsSync(availableOptionsPath)) {
     try {
       const content = fs.readFileSync(availableOptionsPath, 'utf-8');
       return JSON.parse(content);
     } catch (error) {
-      // Fall through to try field_options.json
+      console.warn(`⚠️  Warning: Could not load available_options.json. Validation disabled.`);
+      return {};
     }
   }
   
-  // Fall back to field_options.json
-  const fieldOptionsPath = path.join(__dirname, '../extras/field_options.json');
-  try {
-    const content = fs.readFileSync(fieldOptionsPath, 'utf-8');
-    return JSON.parse(content);
-  } catch (error) {
-    console.warn(`⚠️  Warning: Could not load field_options.json. Validation disabled.`);
-    return {};
-  }
+  console.warn(`⚠️  Warning: available_options.json not found. Validation disabled.`);
+  return {};
 }
 
 /**
@@ -175,14 +168,26 @@ export function extractUniqueValues(rows: any[], fieldName: string): string[] {
 export function validateData(rows: any[], fieldOptions: Record<string, string[]>): ValidationError[] {
   const errors: ValidationError[] = [];
   
-  // Fields that should be validated (array fields)
+  // Fields that should be validated
   const fieldsToValidate = ['inputs', 'outputs', 'enhancement', 'enhancement-order', 'responsibility_options', 'task', 'taskProduct'];
+  
+  // Map fields to their validation source (inputs/outputs should validate against taskProduct)
+  const fieldValidationMap: Record<string, string> = {
+    'inputs': 'taskProduct',
+    'outputs': 'taskProduct',
+    'enhancement': 'enhancement',
+    'enhancement-order': 'enhancement',
+    'responsibility_options': 'responsibility_options',
+    'task': 'task',
+    'taskProduct': 'taskProduct'
+  };
   
   rows.forEach((row, rowIndex) => {
     for (const field of fieldsToValidate) {
       if (row[field] !== undefined && row[field] !== null && row[field] !== '') {
-        const fieldKey = field.replace(/-/g, '_'); // Handle field name variations
-        const allowedOptions = fieldOptions[field] || fieldOptions[fieldKey];
+        const validationKey = fieldValidationMap[field] || field;
+        const fieldKey = validationKey.replace(/-/g, '_'); // Handle field name variations
+        const allowedOptions = fieldOptions[validationKey] || fieldOptions[fieldKey];
         
         if (allowedOptions && allowedOptions.length > 0) {
           const values = Array.isArray(row[field]) ? row[field] : [row[field]];
