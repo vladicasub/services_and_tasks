@@ -321,14 +321,13 @@ function validateEnhancementTaskProductSpec(
 }
 
 /**
- * Validate data against field options
- * @param rows - Array of data rows to validate
- * @param fieldOptions - Object containing allowed values for each field
- * @returns Array of validation errors
+ * Validate simple fields (non-compound fields)
  */
-export function validateData(rows: any[], fieldOptions: Record<string, string[]>): ValidationError[] {
-  const errors: ValidationError[] = [];
-  
+function validateSimpleFields(
+  rows: any[],
+  fieldOptions: Record<string, any>,
+  errors: ValidationError[]
+): void {
   // Fields that should be validated
   const fieldsToValidate = ['inputs', 'outputs', 'enhancement', 'enhancement-order', 'responsibility_options', 'task', 'taskProduct'];
   
@@ -368,8 +367,16 @@ export function validateData(rows: any[], fieldOptions: Record<string, string[]>
       }
     }
   });
-  
-  // Validate specification fields (compound fields with ":" separator)
+}
+
+/**
+ * Validate specification fields (compound fields with ":" separator)
+ */
+function validateSpecificationFields(
+  rows: any[],
+  fieldOptions: Record<string, any>,
+  errors: ValidationError[]
+): void {
   const specificationFields = [
     'responsibility specification (Task:Responsibility)',
     'transformation specification (taskProduct:task)',
@@ -390,15 +397,31 @@ export function validateData(rows: any[], fieldOptions: Record<string, string[]>
         
         // Determine what to validate based on the field name and delegate to specific validator
         if (specField.includes('Task:Responsibility')) {
-          validateTaskResponsibilitySpec(specValue, part1, part2, specField, rowIndex, fieldOptions as any, errors);
+          validateTaskResponsibilitySpec(specValue, part1, part2, specField, rowIndex, fieldOptions, errors);
         } else if (specField.includes('taskProduct:task')) {
-          validateTaskProductTaskSpec(specValue, part1, part2, specField, rowIndex, fieldOptions as any, errors);
+          validateTaskProductTaskSpec(specValue, part1, part2, specField, rowIndex, fieldOptions, errors);
         } else if (specField.includes('enhancement:taskProduct')) {
-          validateEnhancementTaskProductSpec(specValue, part1, part2, specField, rowIndex, fieldOptions as any, errors);
+          validateEnhancementTaskProductSpec(specValue, part1, part2, specField, rowIndex, fieldOptions, errors);
         }
       }
     }
   });
+}
+
+/**
+ * Validate data against field options
+ * @param rows - Array of data rows to validate
+ * @param fieldOptions - Object containing allowed values for each field
+ * @returns Array of validation errors
+ */
+export function validateData(rows: any[], fieldOptions: Record<string, string[]>): ValidationError[] {
+  const errors: ValidationError[] = [];
+  
+  // Validate simple fields (single values or arrays)
+  validateSimpleFields(rows, fieldOptions as any, errors);
+  
+  // Validate specification fields (compound "part1:part2" format)
+  validateSpecificationFields(rows, fieldOptions as any, errors);
   
   return errors;
 }
