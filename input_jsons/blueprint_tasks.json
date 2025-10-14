@@ -1,0 +1,349 @@
+[
+    {
+      "task": "Blurring",
+      "inputs": [
+        "Hdr-images"
+      ],
+      "outputs": [
+        "Hdr-images"
+      ],
+      "enhancement": "Blur",
+      "responsibility_options": [
+        "client",
+        "IM_operators",
+        "auto"
+      ]
+    },
+    {
+      "task": "Photo enhancement",
+      "inputs": [
+        "Hdr-images"
+      ],
+      "outputs": [
+        "Hdr-images"
+      ],
+      "enhancement": "Photo-enhancement",
+      "responsibility_options": [
+        "IM_operators",
+        "auto"
+      ]
+    },
+    {
+      "task": "HDR Photos",
+      "inputs": [
+        "spin_captures"
+      ],
+      "outputs": [
+        "Hdr-images"
+      ],
+      "enhancement": "",
+      "responsibility_options": [
+        "IM_operators"
+      ]
+    },
+    {
+      "task": "Auto HDR Photos",
+      "inputs": [
+        "spin_captures"
+      ],
+      "outputs": [
+        "Hdr-images"
+      ],
+      "enhancement": "",
+      "responsibility_options": [
+        "auto"
+      ]
+    },
+    {
+      "task": "HDR Photo Blurring",
+      "inputs": [
+        "spin_captures"
+      ],
+      "outputs": [
+        "Hdr-images"
+      ],
+      "enhancement": "Blur",
+      "responsibility_options": [
+        "IM_operators"
+      ]
+    },
+    {
+      "task": "HDR Photo Retouching",
+      "inputs": [
+        "spin_captures"
+      ],
+      "outputs": [
+        "Hdr-images"
+      ],
+      "enhancement": "Photo-enhancement",
+      "responsibility_options": [
+        "IM_operators"
+      ]
+    },
+    {
+      "task": "HDR Photo Decluttering",
+      "inputs": [
+        "spin_captures"
+      ],
+      "outputs": [
+        "Hdr-images"
+      ],
+      "enhancement": "Declutter",
+      "responsibility_options": [
+        "IM_operators"
+      ]
+    },
+    {
+      "task": "HDR Photo Staging",
+      "inputs": [
+        "spin_captures"
+      ],
+      "outputs": [
+        "Hdr-images"
+      ],
+      "enhancement": "Staging",
+      "responsibility_options": [
+        "IM_operators"
+      ]
+    },
+    {
+      "task": "Staging",
+      "inputs": [
+        "Panos"
+      ],
+      "outputs": [
+        "Panos"
+      ],
+      "enhancement": "Staging",
+      "responsibility_options": [
+        "IM_operators"
+      ]
+    },
+    {
+      "task": "Declutter",
+      "inputs": [
+        "Panos"
+      ],
+      "outputs": [
+        "Panos"
+      ],
+      "enhancement": "Declutter",
+      "responsibility_options": [
+        "IM_operators"
+      ]
+    },
+    {
+      "task": "Photo Capture",
+      "inputs": [
+        "Panos",
+        "geometry-scaffold"
+      ],
+      "outputs": [
+        "Hdr-images"
+      ],
+      "enhancement": "",
+      "responsibility_options": [
+        "client",
+        "auto",
+        "IM_operators"
+      ]
+    },
+    {
+      "task": "Pano Generation",
+      "inputs": [
+        "spin_captures"
+      ],
+      "outputs": [
+        "Panos"
+      ],
+      "enhancement": "",
+      "responsibility_options": [
+        "auto"
+      ]
+    },
+    {
+      "task": "DSLR Photos",
+      "inputs": [
+        "Panos"
+      ],
+      "outputs": [
+        "Hdr-images"
+      ],
+      "enhancement": "",
+      "responsibility_options": [
+        "IM_operators"
+      ]
+    },
+    {
+      "task": "DSLR Photo Retouching",
+      "inputs": [
+        "Panos"
+      ],
+      "outputs": [
+        "Hdr-images"
+      ],
+      "enhancement": "Photo-enhancement",
+      "responsibility_options": [
+        "IM_operators"
+      ]
+    },
+    {
+      "task": "DSLR Photo Decluttering",
+      "inputs": [
+        "Panos"
+      ],
+      "outputs": [
+        "Hdr-images"
+      ],
+      "enhancement": "Declutter",
+      "responsibility_options": [
+        "IM_operators"
+      ]
+    },
+    {
+      "task": "DSLR Photo Staging",
+      "inputs": [
+        "Panos"
+      ],
+      "outputs": [
+        "Hdr-images"
+      ],
+      "enhancement": "Staging",
+      "responsibility_options": [
+        "IM_operators"
+      ]
+    },
+    {
+      "task": "Data Acquisition",
+      "inputs": [
+      ],
+      "outputs": [
+        "spin_captures"
+      ],
+      "enhancement": "",
+      "responsibility_options": [
+        "IM-scanner",
+        "client"
+      ]
+    },
+    {
+      "task": "geometry-scaffold-building",
+      "inputs": [
+        "Panos"
+      ],
+      "outputs": [
+        "geometry-scaffold"
+      ],
+      "enhancement": "",
+      "responsibility_options": [
+        "IM-operators"
+      ]
+    },
+    {
+      "task": "floorplan-building",
+      "inputs": [
+        "geometry-scaffold"
+      ],
+      "outputs": [
+        "Floorplan"
+      ],
+      "enhancement": "",
+      "responsibility_options": [
+        "auto"
+      ]
+    },
+    {
+      "task": "floorMeasurement-building",
+      "inputs": [
+        "geometry-scaffold"
+      ],
+      "outputs": [
+        "Floor-measurements"
+      ],
+      "enhancement": "",
+      "responsibility_options": [
+        "auto"
+      ]
+    },
+    {
+      "task": "Walls-and-wall-elements-building",
+      "inputs": [
+        "geometry-scaffold"
+      ],
+      "outputs": [
+        "Walls-and-wall-elements"
+      ],
+      "enhancement": "",
+      "responsibility_options": [
+        "auto"
+      ]
+    },
+    {
+      "task": "Elevation-building",
+      "inputs": [
+        "geometry-scaffold"
+      ],
+      "outputs": [
+        "Elevation"
+      ],
+      "enhancement": "",
+      "responsibility_options": [
+        "auto"
+      ]
+    },
+    {
+      "task": "Walkthrough-building",
+      "inputs": [
+        "geometry-scaffold",
+        "Panos"
+      ],
+      "outputs": [
+        "Walkthrough-tour"
+      ],
+      "enhancement": "",
+      "responsibility_options": [
+        "auto"
+      ]
+    },
+    {
+      "task": "Measurement-tool-building",
+      "inputs": [
+        "Walkthrough-tour"
+      ],
+      "outputs": [
+        "Measurement-tool"
+      ],
+      "enhancement": "",
+      "responsibility_options": [
+        "auto"
+      ]
+    },
+    {
+      "task": "Thermo-view-building",
+      "inputs": [
+        "Walkthrough-tour"
+      ],
+      "outputs": [
+        "Thermo-view"
+      ],
+      "enhancement": "",
+      "responsibility_options": [
+        "auto"
+      ]
+    },
+    {
+      "task": "Dollhouse-building",
+      "inputs": [
+        "Walkthrough-tour",
+        "geometry-scaffold",
+        "Panos"
+      ],
+      "outputs": [
+        "Dollhouse"
+      ],
+      "enhancement": "",
+      "responsibility_options": [
+        "auto"
+      ]
+    }
+  ]
