@@ -1,4 +1,32 @@
 {
+  "taskProduct": [
+    "Dollhouse",
+    "Elevation",
+    "Floor-measurements",
+    "Floorplan",
+    "Flythrough",
+    "Flythrough-path",
+    "Hdr-images",
+    "Measurement-tool",
+    "Panos",
+    "Thermo-view",
+    "Walkthrough-tour",
+    "Walkthrough-video",
+    "Walls-and-wall-elements",
+    "dslr_captures",
+    "geometry-scaffold",
+    "preconInput",
+    "roomplan-FP",
+    "spin_captures",
+    "spin_lidar",
+    "spin_thermo"
+  ],
+  "enhancement-order": [
+    "Blur",
+    "Declutter",
+    "Photo-enhancement",
+    "Staging"
+  ],
   "enhancement": [
     "Blur",
     "Declutter",
@@ -38,5 +66,256 @@
     "Walls-and-wall-elements-building",
     "floorMeasurement-building",
     "floorplan-building"
-  ]
+  ],
+  "Service": [
+    "Auto Dollhouse",
+    "Auto Floor Plan",
+    "Auto GLA Floor Plan",
+    "Auto HDR Photos",
+    "Auto LiDAR Floor Plan",
+    "Auto LiDAR GLA Floor Plan",
+    "Auto LiDAR Material Floor Plan",
+    "Auto Material Floor Plan",
+    "Auto Walkthrough Tour",
+    "Blurred Walkthrough Tour",
+    "Curbshot Photo Retouching",
+    "DSLR Photo Decluttering",
+    "DSLR Photo Retouching",
+    "DSLR Photo Staging",
+    "DSLR Photos",
+    "Decluttered Walkthrough Tour",
+    "Dollhouse",
+    "Floor Measurements & Data",
+    "Floor Plan",
+    "Flythrough",
+    "GLA Floor Plan",
+    "HDR Photo Blurring",
+    "HDR Photo Decluttering",
+    "HDR Photo Retouching",
+    "HDR Photo Staging",
+    "HDR Photos",
+    "LiDAR Floor Plan",
+    "LiDAR GLA Floor Plan",
+    "LiDAR Material Floor Plan",
+    "Material Floor Plan",
+    "Measurement Tool",
+    "Pano Blurring",
+    "Pano Decluttering",
+    "Pano Retouching",
+    "Pano Staging",
+    "Property Elevation Data",
+    "Retouched Walkthrough Tour",
+    "RoomPlan Floor Plan",
+    "RoomPlan GLA Floor Plan",
+    "Staged Walkthrough Tour",
+    "Thermal View",
+    "Walkthrough Tour",
+    "Walkthrough Video",
+    "Walls, Floors, Ceilings & Wall Element Data"
+  ],
+  "task_responsibilities": {
+    "Data-Acquisition": [
+      "IM-scanner",
+      "client"
+    ],
+    "Pano-Generation-spins": [
+      "auto"
+    ],
+    "Pano-Generation-dslr": [
+      "auto"
+    ],
+    "Geometry-building-spins": [
+      "IM-operators"
+    ],
+    "Geometry-building-roomPlan": [
+      "IM-operators"
+    ],
+    "Geometry-building-precon": [
+      "IM-operators"
+    ],
+    "floorplan-building": [
+      "auto"
+    ],
+    "floorMeasurement-building": [
+      "auto"
+    ],
+    "Walls-and-wall-elements-building": [
+      "auto"
+    ],
+    "Elevation-building": [
+      "auto"
+    ],
+    "Walkthrough-building": [
+      "auto"
+    ],
+    "Measurement-tool-building": [
+      "auto"
+    ],
+    "Thermo-view-building": [
+      "auto"
+    ],
+    "Dollhouse-building": [
+      "auto"
+    ],
+    "Flythrough-path-creation": [
+      "IM-operators"
+    ],
+    "Flythrough-generation": [
+      "auto"
+    ],
+    "Walkthrough-video-generation": [
+      "auto"
+    ],
+    "Photo-Capture": [
+      "client",
+      "auto",
+      "IM-operators"
+    ],
+    "Panos-Blurring": [
+      "client",
+      "IM-operators",
+      "auto"
+    ],
+    "HDR-Photo-Blurring": [
+      "IM-operators"
+    ],
+    "Panos-Photo-enhancement": [
+      "IM-operators",
+      "auto"
+    ],
+    "HDR-Photo-enhancement": [
+      "IM-operators"
+    ],
+    "Panos-Decluttering": [
+      "IM-operators"
+    ],
+    "HDR-Photo-Decluttering": [
+      "IM-operators"
+    ],
+    "Panos-Staging": [
+      "IM-operators"
+    ],
+    "HDR-Photo-Staging": [
+      "IM-operators"
+    ]
+  },
+  "taskProduct_producers": {
+    "spin_captures": [
+      "Data-Acquisition"
+    ],
+    "dslr_captures": [
+      "Data-Acquisition"
+    ],
+    "spin_lidar": [
+      "Data-Acquisition"
+    ],
+    "spin_thermo": [
+      "Data-Acquisition"
+    ],
+    "roomplan-FP": [
+      "Data-Acquisition"
+    ],
+    "Panos": [
+      "Pano-Generation-spins",
+      "Pano-Generation-dslr",
+      "Panos-Blurring",
+      "Panos-Photo-enhancement",
+      "Panos-Decluttering",
+      "Panos-Staging"
+    ],
+    "geometry-scaffold": [
+      "Geometry-building-spins",
+      "Geometry-building-roomPlan",
+      "Geometry-building-precon"
+    ],
+    "Floorplan": [
+      "floorplan-building"
+    ],
+    "Floor-measurements": [
+      "floorMeasurement-building"
+    ],
+    "Walls-and-wall-elements": [
+      "Walls-and-wall-elements-building"
+    ],
+    "Elevation": [
+      "Elevation-building"
+    ],
+    "Walkthrough-tour": [
+      "Walkthrough-building"
+    ],
+    "Measurement-tool": [
+      "Measurement-tool-building"
+    ],
+    "Thermo-view": [
+      "Thermo-view-building"
+    ],
+    "Dollhouse": [
+      "Dollhouse-building"
+    ],
+    "Flythrough-path": [
+      "Flythrough-path-creation"
+    ],
+    "Flythrough": [
+      "Flythrough-generation"
+    ],
+    "Walkthrough-video": [
+      "Walkthrough-video-generation"
+    ],
+    "Hdr-images": [
+      "Photo-Capture",
+      "HDR-Photo-Blurring",
+      "HDR-Photo-enhancement",
+      "HDR-Photo-Decluttering",
+      "HDR-Photo-Staging"
+    ]
+  },
+  "taskProduct_enhancements": {
+    "spin_captures": [],
+    "spin_lidar": [],
+    "spin_thermo": [],
+    "dslr_captures": [],
+    "roomplan-FP": [],
+    "preconInput": [],
+    "Panos": [
+      "Photo-enhancement",
+      "Blur",
+      "Staging",
+      "Declutter"
+    ],
+    "geometry-scaffold": [],
+    "Floorplan": [],
+    "Floor-measurements": [],
+    "Walls-and-wall-elements": [],
+    "Elevation": [],
+    "Walkthrough-tour": [
+      "Photo-enhancement",
+      "Blur",
+      "Staging",
+      "Declutter"
+    ],
+    "Measurement-tool": [],
+    "Thermo-view": [],
+    "Dollhouse": [],
+    "Flythrough-path": [
+      "Staging"
+    ],
+    "Flythrough": [
+      "Photo-enhancement",
+      "Blur",
+      "Staging",
+      "Declutter"
+    ],
+    "Walkthrough-video": [
+      "Photo-enhancement",
+      "Blur",
+      "Staging",
+      "Declutter"
+    ],
+    "Hdr-images": [
+      "Photo-enhancement",
+      "Blur",
+      "Staging",
+      "Declutter"
+    ]
+  }
 }
