@@ -26,6 +26,48 @@ import {
 import { TransformSummary } from './types';
 
 /**
+ * Learning configuration for each blueprint file
+ * Defines which fields to learn and whether to validate
+ */
+const LEARNING_CONFIG: Record<string, { learnFields: string[], validate: boolean }> = {
+  'blueprint_task_products': { learnFields: ['taskProduct', 'enhancement-order'], validate: false },
+  'blueprint_tasks': { learnFields: ['enhancement', 'responsibility_options', 'task'], validate: true },
+  'blueprint_services': { learnFields: ['Service'], validate: true }
+};
+
+/**
+ * Build and save relationship mappings after processing blueprint_tasks
+ * @param fileBaseName - Name of the file being processed
+ * @param taskProductsData - Data from blueprint_task_products
+ * @param tasksData - Data from blueprint_tasks
+ */
+function buildAndSaveRelationshipsAfterTasks(
+  fileBaseName: string,
+  taskProductsData: any[],
+  tasksData: any[]
+): void {
+  // Build relationships after processing blueprint_tasks (when we have both task_products and tasks data)
+  if (fileBaseName === 'blueprint_tasks' && taskProductsData.length > 0 && tasksData.length > 0) {
+    console.log('─'.repeat(80));
+    console.log('🔗 Building relationships...');
+    
+    const taskResponsibilities = buildTaskResponsibilities(tasksData);
+    const taskProductProducers = buildTaskProductProducers(tasksData);
+    const taskProductEnhancements = buildTaskProductEnhancements(taskProductsData);
+    
+    updateAvailableOptionsRelationships(
+      taskResponsibilities,
+      taskProductProducers,
+      taskProductEnhancements
+    );
+    
+    console.log(`   ✅ Built ${Object.keys(taskResponsibilities).length} task → responsibilities mappings`);
+    console.log(`   ✅ Built ${Object.keys(taskProductProducers).length} taskProduct → producers mappings`);
+    console.log(`   ✅ Built ${Object.keys(taskProductEnhancements).length} taskProduct → enhancements mappings`);
+  }
+}
+
+/**
  * Transform from JSON - Convert specified JSON files to XLSX with progressive learning
  * Processes files in the order provided on command line
  * @param filePaths - Array of JSON file paths to transform
@@ -53,13 +95,6 @@ async function transform_from_json(filePaths: string[], stepMode: boolean = fals
       fs.mkdirSync(outputDir, { recursive: true });
     }
     
-    // Define learning configuration by filename pattern
-    const learningConfig: Record<string, { learnFields: string[], validate: boolean }> = {
-      'blueprint_task_products': { learnFields: ['taskProduct', 'enhancement-order'], validate: false },
-      'blueprint_tasks': { learnFields: ['enhancement', 'responsibility_options', 'task'], validate: true },
-      'blueprint_services': { learnFields: ['Service'], validate: true }
-    };
-    
     let successCount = 0;
     let errorCount = 0;
     
@@ -75,7 +110,7 @@ async function transform_from_json(filePaths: string[], stepMode: boolean = fals
       const fileBaseName = fileName.replace('.json', '');
       
       // Get learning config for this file
-      const config = learningConfig[fileBaseName] || { learnFields: [], validate: true };
+      const config = LEARNING_CONFIG[fileBaseName] || { learnFields: [], validate: true };
       
       if (!fs.existsSync(resolvedPath)) {
         console.log(`⚠️  ${fileName} - Not found, skipping`);
@@ -171,25 +206,8 @@ async function transform_from_json(filePaths: string[], stepMode: boolean = fals
         }
         successCount++;
         
-        // Build relationships after processing blueprint_tasks (when we have both task_products and tasks data)
-        if (fileBaseName === 'blueprint_tasks' && taskProductsData.length > 0 && tasksData.length > 0) {
-          console.log('─'.repeat(80));
-          console.log('🔗 Building relationships...');
-          
-          const taskResponsibilities = buildTaskResponsibilities(tasksData);
-          const taskProductProducers = buildTaskProductProducers(tasksData);
-          const taskProductEnhancements = buildTaskProductEnhancements(taskProductsData);
-          
-          updateAvailableOptionsRelationships(
-            taskResponsibilities,
-            taskProductProducers,
-            taskProductEnhancements
-          );
-          
-          console.log(`   ✅ Built ${Object.keys(taskResponsibilities).length} task → responsibilities mappings`);
-          console.log(`   ✅ Built ${Object.keys(taskProductProducers).length} taskProduct → producers mappings`);
-          console.log(`   ✅ Built ${Object.keys(taskProductEnhancements).length} taskProduct → enhancements mappings`);
-        }
+        // Build relationships if we just finished processing blueprint_tasks
+        buildAndSaveRelationshipsAfterTasks(fileBaseName, taskProductsData, tasksData);
         
         // Wait for keypress if step mode is enabled
         if (stepMode) {
@@ -242,13 +260,6 @@ async function transform_from_table(filePaths: string[], stepMode: boolean = fal
       fs.mkdirSync(outputDir, { recursive: true });
     }
     
-    // Define learning configuration by filename pattern
-    const learningConfig: Record<string, { learnFields: string[], validate: boolean }> = {
-      'blueprint_task_products': { learnFields: ['taskProduct', 'enhancement-order'], validate: false },
-      'blueprint_tasks': { learnFields: ['enhancement', 'responsibility_options', 'task'], validate: true },
-      'blueprint_services': { learnFields: ['Service'], validate: true }
-    };
-    
     let successCount = 0;
     let errorCount = 0;
     
@@ -264,7 +275,7 @@ async function transform_from_table(filePaths: string[], stepMode: boolean = fal
       const fileBaseName = fileName.replace('.xlsx', '');
       
       // Get learning config for this file
-      const config = learningConfig[fileBaseName] || { learnFields: [], validate: true };
+      const config = LEARNING_CONFIG[fileBaseName] || { learnFields: [], validate: true };
       
       if (!fs.existsSync(resolvedPath)) {
         console.log(`⚠️  ${fileName} - Not found, skipping`);
@@ -332,25 +343,8 @@ async function transform_from_table(filePaths: string[], stepMode: boolean = fal
         }
         successCount++;
         
-        // Build relationships after processing blueprint_tasks (when we have both task_products and tasks data)
-        if (fileBaseName === 'blueprint_tasks' && taskProductsData.length > 0 && tasksData.length > 0) {
-          console.log('─'.repeat(80));
-          console.log('🔗 Building relationships...');
-          
-          const taskResponsibilities = buildTaskResponsibilities(tasksData);
-          const taskProductProducers = buildTaskProductProducers(tasksData);
-          const taskProductEnhancements = buildTaskProductEnhancements(taskProductsData);
-          
-          updateAvailableOptionsRelationships(
-            taskResponsibilities,
-            taskProductProducers,
-            taskProductEnhancements
-          );
-          
-          console.log(`   ✅ Built ${Object.keys(taskResponsibilities).length} task → responsibilities mappings`);
-          console.log(`   ✅ Built ${Object.keys(taskProductProducers).length} taskProduct → producers mappings`);
-          console.log(`   ✅ Built ${Object.keys(taskProductEnhancements).length} taskProduct → enhancements mappings`);
-        }
+        // Build relationships if we just finished processing blueprint_tasks
+        buildAndSaveRelationshipsAfterTasks(fileBaseName, taskProductsData, tasksData);
         
         // Wait for keypress if step mode is enabled
         if (stepMode) {
