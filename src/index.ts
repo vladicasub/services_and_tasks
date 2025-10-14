@@ -49,7 +49,7 @@ async function transform_from_json(filePaths: string[]): Promise<void> {
     const learningConfig: Record<string, { learnFields: string[], validate: boolean }> = {
       'blueprint_task_products': { learnFields: ['taskProduct', 'enhancement-order'], validate: false },
       'blueprint_tasks': { learnFields: ['enhancement', 'responsibility_options', 'task'], validate: true },
-      'blueprint_services': { learnFields: [], validate: true }
+      'blueprint_services': { learnFields: ['Service'], validate: true }
     };
     
     let successCount = 0;
@@ -191,7 +191,7 @@ async function transform_from_table(filePaths: string[]): Promise<void> {
     const learningConfig: Record<string, { learnFields: string[], validate: boolean }> = {
       'blueprint_task_products': { learnFields: ['taskProduct', 'enhancement-order'], validate: false },
       'blueprint_tasks': { learnFields: ['enhancement', 'responsibility_options', 'task'], validate: true },
-      'blueprint_services': { learnFields: [], validate: true }
+      'blueprint_services': { learnFields: ['Service'], validate: true }
     };
     
     let successCount = 0;
