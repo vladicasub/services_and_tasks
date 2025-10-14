@@ -5,9 +5,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 /**
- * List all files in a directory
+ * Transform from JSON - List all JSON files in a directory
  */
-function listFilesInDirectory(dirPath: string): void {
+function transform_from_json(dirPath: string): void {
   try {
     // Resolve the directory path
     const resolvedPath = path.resolve(dirPath);
@@ -25,30 +25,30 @@ function listFilesInDirectory(dirPath: string): void {
       process.exit(1);
     }
     
-    // Read all files in the directory
-    const files = fs.readdirSync(resolvedPath);
+    // Read all files in the directory and filter JSON files
+    const allFiles = fs.readdirSync(resolvedPath);
+    const jsonFiles = allFiles.filter(file => {
+      const filePath = path.join(resolvedPath, file);
+      const fileStats = fs.statSync(filePath);
+      return fileStats.isFile() && file.toLowerCase().endsWith('.json');
+    });
     
-    console.log(`\nFiles in '${dirPath}':`);
+    console.log(`\nJSON files in '${dirPath}':`);
     console.log('─'.repeat(50));
     
-    if (files.length === 0) {
-      console.log('(empty directory)');
+    if (jsonFiles.length === 0) {
+      console.log('(no JSON files found)');
     } else {
-      files.forEach((file) => {
+      jsonFiles.forEach((file) => {
         const filePath = path.join(resolvedPath, file);
         const fileStats = fs.statSync(filePath);
-        
-        if (fileStats.isDirectory()) {
-          console.log(`📁 ${file}/`);
-        } else {
-          const sizeKB = (fileStats.size / 1024).toFixed(2);
-          console.log(`📄 ${file} (${sizeKB} KB)`);
-        }
+        const sizeKB = (fileStats.size / 1024).toFixed(2);
+        console.log(`📄 ${file} (${sizeKB} KB)`);
       });
     }
     
     console.log('─'.repeat(50));
-    console.log(`Total: ${files.length} item(s)\n`);
+    console.log(`Total: ${jsonFiles.length} JSON file(s)\n`);
     
   } catch (error) {
     console.error(`Error reading directory: ${error}`);
@@ -66,7 +66,7 @@ program
   .option('-i, --input-json <directory>', 'Input directory containing JSON files')
   .action((options) => {
     if (options.inputJson) {
-      listFilesInDirectory(options.inputJson);
+      transform_from_json(options.inputJson);
     } else {
       console.error('Error: --input-json option is required');
       program.help();
