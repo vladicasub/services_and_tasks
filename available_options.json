@@ -67,6 +67,213 @@
     "floorMeasurement-building",
     "floorplan-building"
   ],
+  "task_responsibilities": {
+    "Data-Acquisition": [
+      "IM-scanner",
+      "client"
+    ],
+    "Pano-Generation-spins": [
+      "auto"
+    ],
+    "Pano-Generation-dslr": [
+      "auto"
+    ],
+    "Geometry-building-spins": [
+      "IM-operators",
+      "auto"
+    ],
+    "Geometry-building-roomPlan": [
+      "IM-operators",
+      "client"
+    ],
+    "Geometry-building-precon": [
+      "IM-operators"
+    ],
+    "floorplan-building": [
+      "auto"
+    ],
+    "floorMeasurement-building": [
+      "auto"
+    ],
+    "Walls-and-wall-elements-building": [
+      "auto"
+    ],
+    "Elevation-building": [
+      "auto"
+    ],
+    "Walkthrough-building": [
+      "auto"
+    ],
+    "Measurement-tool-building": [
+      "auto"
+    ],
+    "Thermo-view-building": [
+      "auto"
+    ],
+    "Dollhouse-building": [
+      "auto"
+    ],
+    "Flythrough-path-creation": [
+      "IM-operators"
+    ],
+    "Flythrough-generation": [
+      "auto"
+    ],
+    "Walkthrough-video-generation": [
+      "auto"
+    ],
+    "Photo-Capture": [
+      "client",
+      "auto",
+      "IM-operators"
+    ],
+    "Panos-Blurring": [
+      "client",
+      "IM-operators",
+      "auto"
+    ],
+    "HDR-Photo-Blurring": [
+      "IM-operators"
+    ],
+    "Panos-Photo-enhancement": [
+      "IM-operators",
+      "auto"
+    ],
+    "HDR-Photo-enhancement": [
+      "IM-operators"
+    ],
+    "Panos-Decluttering": [
+      "IM-operators"
+    ],
+    "HDR-Photo-Decluttering": [
+      "IM-operators"
+    ],
+    "Panos-Staging": [
+      "IM-operators"
+    ],
+    "HDR-Photo-Staging": [
+      "IM-operators"
+    ]
+  },
+  "taskProduct_producers": {
+    "spin_captures": [
+      "Data-Acquisition"
+    ],
+    "dslr_captures": [
+      "Data-Acquisition"
+    ],
+    "spin_lidar": [
+      "Data-Acquisition"
+    ],
+    "spin_thermo": [
+      "Data-Acquisition"
+    ],
+    "roomplan-FP": [
+      "Data-Acquisition"
+    ],
+    "Panos": [
+      "Pano-Generation-spins",
+      "Pano-Generation-dslr",
+      "Panos-Blurring",
+      "Panos-Photo-enhancement",
+      "Panos-Decluttering",
+      "Panos-Staging"
+    ],
+    "geometry-scaffold": [
+      "Geometry-building-spins",
+      "Geometry-building-roomPlan",
+      "Geometry-building-precon"
+    ],
+    "Floorplan": [
+      "floorplan-building"
+    ],
+    "Floor-measurements": [
+      "floorMeasurement-building"
+    ],
+    "Walls-and-wall-elements": [
+      "Walls-and-wall-elements-building"
+    ],
+    "Elevation": [
+      "Elevation-building"
+    ],
+    "Walkthrough-tour": [
+      "Walkthrough-building"
+    ],
+    "Measurement-tool": [
+      "Measurement-tool-building"
+    ],
+    "Thermo-view": [
+      "Thermo-view-building"
+    ],
+    "Dollhouse": [
+      "Dollhouse-building"
+    ],
+    "Flythrough-path": [
+      "Flythrough-path-creation"
+    ],
+    "Flythrough": [
+      "Flythrough-generation"
+    ],
+    "Walkthrough-video": [
+      "Walkthrough-video-generation"
+    ],
+    "Hdr-images": [
+      "Photo-Capture",
+      "HDR-Photo-Blurring",
+      "HDR-Photo-enhancement",
+      "HDR-Photo-Decluttering",
+      "HDR-Photo-Staging"
+    ]
+  },
+  "taskProduct_enhancements": {
+    "spin_captures": [],
+    "spin_lidar": [],
+    "spin_thermo": [],
+    "dslr_captures": [],
+    "roomplan-FP": [],
+    "preconInput": [],
+    "Panos": [
+      "Photo-enhancement",
+      "Blur",
+      "Staging",
+      "Declutter"
+    ],
+    "geometry-scaffold": [],
+    "Floorplan": [],
+    "Floor-measurements": [],
+    "Walls-and-wall-elements": [],
+    "Elevation": [],
+    "Walkthrough-tour": [
+      "Photo-enhancement",
+      "Blur",
+      "Staging",
+      "Declutter"
+    ],
+    "Measurement-tool": [],
+    "Thermo-view": [],
+    "Dollhouse": [],
+    "Flythrough-path": [
+      "Staging"
+    ],
+    "Flythrough": [
+      "Photo-enhancement",
+      "Blur",
+      "Staging",
+      "Declutter"
+    ],
+    "Walkthrough-video": [
+      "Photo-enhancement",
+      "Blur",
+      "Staging",
+      "Declutter"
+    ],
+    "Hdr-images": [
+      "Photo-enhancement",
+      "Blur",
+      "Staging",
+      "Declutter"
+    ]
+  },
   "Service": [
     "Auto Dollhouse",
     "Auto Floor Plan",

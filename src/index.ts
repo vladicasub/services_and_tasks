@@ -171,6 +171,26 @@ async function transform_from_json(filePaths: string[], stepMode: boolean = fals
         }
         successCount++;
         
+        // Build relationships after processing blueprint_tasks (when we have both task_products and tasks data)
+        if (fileBaseName === 'blueprint_tasks' && taskProductsData.length > 0 && tasksData.length > 0) {
+          console.log('─'.repeat(80));
+          console.log('🔗 Building relationships...');
+          
+          const taskResponsibilities = buildTaskResponsibilities(tasksData);
+          const taskProductProducers = buildTaskProductProducers(tasksData);
+          const taskProductEnhancements = buildTaskProductEnhancements(taskProductsData);
+          
+          updateAvailableOptionsRelationships(
+            taskResponsibilities,
+            taskProductProducers,
+            taskProductEnhancements
+          );
+          
+          console.log(`   ✅ Built ${Object.keys(taskResponsibilities).length} task → responsibilities mappings`);
+          console.log(`   ✅ Built ${Object.keys(taskProductProducers).length} taskProduct → producers mappings`);
+          console.log(`   ✅ Built ${Object.keys(taskProductEnhancements).length} taskProduct → enhancements mappings`);
+        }
+        
         // Wait for keypress if step mode is enabled
         if (stepMode) {
           await waitForKeypress();
@@ -312,6 +332,26 @@ async function transform_from_table(filePaths: string[], stepMode: boolean = fal
         }
         successCount++;
         
+        // Build relationships after processing blueprint_tasks (when we have both task_products and tasks data)
+        if (fileBaseName === 'blueprint_tasks' && taskProductsData.length > 0 && tasksData.length > 0) {
+          console.log('─'.repeat(80));
+          console.log('🔗 Building relationships...');
+          
+          const taskResponsibilities = buildTaskResponsibilities(tasksData);
+          const taskProductProducers = buildTaskProductProducers(tasksData);
+          const taskProductEnhancements = buildTaskProductEnhancements(taskProductsData);
+          
+          updateAvailableOptionsRelationships(
+            taskResponsibilities,
+            taskProductProducers,
+            taskProductEnhancements
+          );
+          
+          console.log(`   ✅ Built ${Object.keys(taskResponsibilities).length} task → responsibilities mappings`);
+          console.log(`   ✅ Built ${Object.keys(taskProductProducers).length} taskProduct → producers mappings`);
+          console.log(`   ✅ Built ${Object.keys(taskProductEnhancements).length} taskProduct → enhancements mappings`);
+        }
+        
         // Wait for keypress if step mode is enabled
         if (stepMode) {
           await waitForKeypress();
@@ -321,26 +361,6 @@ async function transform_from_table(filePaths: string[], stepMode: boolean = fal
         console.log(`❌ ${fileName} - Error: ${error}`);
         errorCount++;
       }
-    }
-    
-    // Build relationships after all files are processed
-    if (taskProductsData.length > 0 && tasksData.length > 0) {
-      console.log('─'.repeat(80));
-      console.log('🔗 Building relationships...');
-      
-      const taskResponsibilities = buildTaskResponsibilities(tasksData);
-      const taskProductProducers = buildTaskProductProducers(tasksData);
-      const taskProductEnhancements = buildTaskProductEnhancements(taskProductsData);
-      
-      updateAvailableOptionsRelationships(
-        taskResponsibilities,
-        taskProductProducers,
-        taskProductEnhancements
-      );
-      
-      console.log(`   ✅ Built ${Object.keys(taskResponsibilities).length} task → responsibilities mappings`);
-      console.log(`   ✅ Built ${Object.keys(taskProductProducers).length} taskProduct → producers mappings`);
-      console.log(`   ✅ Built ${Object.keys(taskProductEnhancements).length} taskProduct → enhancements mappings`);
     }
     
     console.log('─'.repeat(80));
