@@ -3,9 +3,50 @@
 import { program } from 'commander';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as XLSX from 'xlsx';
 
 /**
- * Transform from JSON - List all JSON files in a directory
+ * Flatten nested objects and arrays for Excel display
+ * Converts arrays to comma-separated strings
+ * Converts nested objects to dot-notation strings
+ */
+function flattenObject(obj: any, prefix: string = ''): any {
+  const flattened: any = {};
+  
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      const value = obj[key];
+      const newKey = prefix ? `${prefix}.${key}` : key;
+      
+      if (value === null || value === undefined) {
+        flattened[newKey] = '';
+      } else if (Array.isArray(value)) {
+        // Convert arrays to comma-separated strings
+        if (value.length === 0) {
+          flattened[newKey] = '';
+        } else if (value.every(item => typeof item === 'string' || typeof item === 'number')) {
+          // Simple array of primitives
+          flattened[newKey] = value.join(', ');
+        } else {
+          // Array of objects - convert to JSON string
+          flattened[newKey] = JSON.stringify(value);
+        }
+      } else if (typeof value === 'object' && !(value instanceof Date)) {
+        // Nested object - flatten recursively
+        const nested = flattenObject(value, newKey);
+        Object.assign(flattened, nested);
+      } else {
+        // Primitive value
+        flattened[newKey] = value;
+      }
+    }
+  }
+  
+  return flattened;
+}
+
+/**
+ * Transform from JSON - Convert JSON files to XLSX
  */
 function transform_from_json(dirPath: string): void {
   try {
@@ -25,6 +66,12 @@ function transform_from_json(dirPath: string): void {
       process.exit(1);
     }
     
+    // Create output directory if it doesn't exist
+    const outputDir = path.join(resolvedPath, 'outputs');
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true });
+    }
+    
     // Read all files in the directory and filter JSON files
     const allFiles = fs.readdirSync(resolvedPath);
     const jsonFiles = allFiles.filter(file => {
@@ -33,25 +80,88 @@ function transform_from_json(dirPath: string): void {
       return fileStats.isFile() && file.toLowerCase().endsWith('.json');
     });
     
-    console.log(`\nJSON files in '${dirPath}':`);
-    console.log('─'.repeat(50));
+    console.log(`\n📊 Converting JSON files to XLSX...`);
+    console.log('─'.repeat(80));
     
     if (jsonFiles.length === 0) {
       console.log('(no JSON files found)');
-    } else {
-      jsonFiles.forEach((file) => {
-        const filePath = path.join(resolvedPath, file);
-        const fileStats = fs.statSync(filePath);
-        const sizeKB = (fileStats.size / 1024).toFixed(2);
-        console.log(`📄 ${file} (${sizeKB} KB)`);
-      });
+      return;
     }
     
-    console.log('─'.repeat(50));
-    console.log(`Total: ${jsonFiles.length} JSON file(s)\n`);
+    let successCount = 0;
+    let errorCount = 0;
+    
+    jsonFiles.forEach((file) => {
+      try {
+        const inputPath = path.join(resolvedPath, file);
+        const outputFileName = file.replace('.json', '.xlsx');
+        const outputPath = path.join(outputDir, outputFileName);
+        
+        // Read JSON file
+        const jsonContent = fs.readFileSync(inputPath, 'utf-8');
+        let jsonData;
+        
+        try {
+          jsonData = JSON.parse(jsonContent);
+        } catch (parseError) {
+          console.log(`⚠️  ${file} - Invalid JSON, skipping`);
+          errorCount++;
+          return;
+        }
+        
+        // Handle empty or invalid JSON
+        if (!jsonData || (Array.isArray(jsonData) && jsonData.length === 0)) {
+          console.log(`⚠️  ${file} - Empty JSON, skipping`);
+          errorCount++;
+          return;
+        }
+        
+        // Convert JSON to worksheet
+        let worksheet: XLSX.WorkSheet;
+        
+        if (Array.isArray(jsonData)) {
+          // Flatten nested arrays and objects for better Excel display
+          const flattenedData = jsonData.map(item => flattenObject(item));
+          worksheet = XLSX.utils.json_to_sheet(flattenedData);
+        } else if (typeof jsonData === 'object') {
+          // Handle single object - convert to array with one element
+          const flattenedData = [flattenObject(jsonData)];
+          worksheet = XLSX.utils.json_to_sheet(flattenedData);
+        } else {
+          console.log(`⚠️  ${file} - Invalid JSON structure, skipping`);
+          errorCount++;
+          return;
+        }
+        
+        // Create workbook and add worksheet
+        const workbook = XLSX.utils.book_new();
+        
+        // Generate sheet name from filename (without extension)
+        const sheetName = file.replace('.json', '').substring(0, 31); // Excel sheet name limit is 31 chars
+        XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+        
+        // Write to file
+        XLSX.writeFile(workbook, outputPath);
+        
+        const inputSize = (fs.statSync(inputPath).size / 1024).toFixed(2);
+        const outputSize = (fs.statSync(outputPath).size / 1024).toFixed(2);
+        console.log(`✅ ${file} (${inputSize} KB) → ${outputFileName} (${outputSize} KB)`);
+        successCount++;
+        
+      } catch (error) {
+        console.log(`❌ ${file} - Error: ${error}`);
+        errorCount++;
+      }
+    });
+    
+    console.log('─'.repeat(80));
+    console.log(`\n📈 Summary:`);
+    console.log(`   ✅ Success: ${successCount} file(s)`);
+    console.log(`   ❌ Failed: ${errorCount} file(s)`);
+    console.log(`   📁 Output directory: ${outputDir}\n`);
     
   } catch (error) {
-    console.error(`Error reading directory: ${error}`);
+    console.error(`Error processing directory: ${error}`);
     process.exit(1);
   }
 }
@@ -134,4 +244,3 @@ program.parse(process.argv);
 if (process.argv.length === 2) {
   program.help();
 }
-

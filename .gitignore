@@ -7,6 +7,9 @@ dist/
 build/
 *.tsbuildinfo
 
+# Generated outputs
+input_jsons/outputs/
+
 # Logs
 *.log
 npm-debug.log*
