@@ -2,7 +2,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import ExcelJS from 'exceljs';
 import { flattenObject, unflattenObject } from './transforms';
-import { extractCellText } from './utils';
+import { extractCellText, readExcelData } from './utils';
+import { initializeAvailableOptions, extractUniqueValues, updateAvailableOptions } from './validation';
 
 // Discover files dynamically
 const inputJsonsDir = path.join(__dirname, '../input_jsons');
@@ -38,10 +39,37 @@ const xlsxFiles = getXlsxFiles();
 // Test directory for temporary files
 const testDir = path.join(__dirname, '../test_temp');
 
-beforeAll(() => {
+beforeAll(async () => {
   // Create test directory
   if (!fs.existsSync(testDir)) {
     fs.mkdirSync(testDir, { recursive: true });
+  }
+  
+  // Initialize available_options.json with progressive learning
+  initializeAvailableOptions();
+  
+  // Learn from existing XLSX files in correct order
+  const learningOrder = [
+    { file: 'blueprint_task_products.xlsx', fields: ['taskProduct', 'enhancement-order'] },
+    { file: 'blueprint_tasks.xlsx', fields: ['enhancement', 'responsibility_options', 'task'] }
+  ];
+  
+  for (const step of learningOrder) {
+    const filePath = path.join(inputTablesDir, step.file);
+    if (fs.existsSync(filePath)) {
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.readFile(filePath);
+      const worksheet = workbook.worksheets[0];
+      if (worksheet) {
+        const { rows } = readExcelData(worksheet);
+        for (const fieldName of step.fields) {
+          const values = extractUniqueValues(rows, fieldName);
+          if (values.length > 0) {
+            updateAvailableOptions(fieldName, values);
+          }
+        }
+      }
+    }
   }
 });
 

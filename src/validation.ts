@@ -76,10 +76,22 @@ export function findClosestMatches(value: string, options: string[], maxSuggesti
 }
 
 /**
- * Load field options from the configuration file
+ * Load field options from available_options.json (dynamically built) or field_options.json (static)
  * @returns Object mapping field names to allowed values
  */
 export function loadFieldOptions(): Record<string, string[]> {
+  // First try to load available_options.json (dynamically built during runtime)
+  const availableOptionsPath = path.join(__dirname, '../available_options.json');
+  if (fs.existsSync(availableOptionsPath)) {
+    try {
+      const content = fs.readFileSync(availableOptionsPath, 'utf-8');
+      return JSON.parse(content);
+    } catch (error) {
+      // Fall through to try field_options.json
+    }
+  }
+  
+  // Fall back to field_options.json
   const fieldOptionsPath = path.join(__dirname, '../extras/field_options.json');
   try {
     const content = fs.readFileSync(fieldOptionsPath, 'utf-8');
@@ -88,6 +100,70 @@ export function loadFieldOptions(): Record<string, string[]> {
     console.warn(`⚠️  Warning: Could not load field_options.json. Validation disabled.`);
     return {};
   }
+}
+
+/**
+ * Initialize available_options.json with empty object
+ */
+export function initializeAvailableOptions(): void {
+  const availableOptionsPath = path.join(__dirname, '../available_options.json');
+  fs.writeFileSync(availableOptionsPath, JSON.stringify({}, null, 2), 'utf-8');
+}
+
+/**
+ * Update available_options.json with learned field values
+ * @param fieldName - Name of the field (e.g., 'taskProduct', 'task')
+ * @param values - Array of unique values to add
+ */
+export function updateAvailableOptions(fieldName: string, values: string[]): void {
+  const availableOptionsPath = path.join(__dirname, '../available_options.json');
+  let currentOptions: Record<string, string[]> = {};
+  
+  // Load current options
+  if (fs.existsSync(availableOptionsPath)) {
+    try {
+      const content = fs.readFileSync(availableOptionsPath, 'utf-8');
+      currentOptions = JSON.parse(content);
+    } catch (error) {
+      // Start fresh if file is corrupted
+      currentOptions = {};
+    }
+  }
+  
+  // Update with new values (sorted and unique)
+  const existingValues = currentOptions[fieldName] || [];
+  const combinedValues = [...new Set([...existingValues, ...values])];
+  currentOptions[fieldName] = combinedValues.sort();
+  
+  // Write back
+  fs.writeFileSync(availableOptionsPath, JSON.stringify(currentOptions, null, 2), 'utf-8');
+}
+
+/**
+ * Extract unique values from data for a specific field
+ * @param rows - Array of data rows
+ * @param fieldName - Name of the field to extract
+ * @returns Array of unique values
+ */
+export function extractUniqueValues(rows: any[], fieldName: string): string[] {
+  const values = new Set<string>();
+  
+  rows.forEach(row => {
+    const fieldValue = row[fieldName];
+    if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
+      if (Array.isArray(fieldValue)) {
+        fieldValue.forEach(v => {
+          const trimmed = String(v).trim();
+          if (trimmed) values.add(trimmed);
+        });
+      } else {
+        const trimmed = String(fieldValue).trim();
+        if (trimmed) values.add(trimmed);
+      }
+    }
+  });
+  
+  return Array.from(values).sort();
 }
 
 /**

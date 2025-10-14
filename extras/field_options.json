@@ -1,11 +1,33 @@
 {
-  "enhancement": [
+  "taskProduct": [
+    "spin_captures",
+    "spin_lidar",
+    "spin_thermo",
+    "dslr_captures",
+    "roomplan-FP",
+    "preconInput",
+    "Panos",
+    "geometry-scaffold",
+    "Floorplan",
+    "Floor-measurements",
+    "Walls-and-wall-elements",
+    "Elevation",
+    "Walkthrough-tour",
+    "Measurement-tool",
+    "Thermo-view",
+    "Dollhouse",
+    "Flythrough-path",
+    "Flythrough",
+    "Walkthrough-video",
+    "Hdr-images"
+  ],
+  "enhancement-order": [
     "Blur",
     "Declutter",
     "Photo-enhancement",
     "Staging"
   ],
-  "enhancement-order": [
+  "enhancement": [
     "Blur",
     "Declutter",
     "Photo-enhancement",
@@ -44,27 +66,5 @@
     "HDR-Photo-Decluttering",
     "Panos-Staging",
     "HDR-Photo-Staging"
-  ],
-  "taskProduct": [
-    "spin_captures",
-    "spin_lidar",
-    "spin_thermo",
-    "dslr_captures",
-    "roomplan-FP",
-    "preconInput",
-    "Panos",
-    "geometry-scaffold",
-    "Floorplan",
-    "Floor-measurements",
-    "Walls-and-wall-elements",
-    "Elevation",
-    "Walkthrough-tour",
-    "Measurement-tool",
-    "Thermo-view",
-    "Dollhouse",
-    "Flythrough-path",
-    "Flythrough",
-    "Walkthrough-video",
-    "Hdr-images"
   ]
 }

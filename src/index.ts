@@ -13,41 +13,55 @@ import {
   writeExcelData,
   reportSummary
 } from './utils';
-import { loadFieldOptions, validateData, reportValidationErrors } from './validation';
+import { 
+  loadFieldOptions, 
+  validateData, 
+  reportValidationErrors,
+  initializeAvailableOptions,
+  updateAvailableOptions,
+  extractUniqueValues
+} from './validation';
 import { TransformSummary } from './types';
 
 /**
- * Transform from JSON - Convert JSON files to XLSX
+ * Transform from JSON - Convert JSON files to XLSX with progressive learning
+ * Processes files in order: task_products -> tasks -> services
+ * Builds available_options.json dynamically during runtime
  */
 async function transform_from_json(dirPath: string): Promise<void> {
   try {
+    console.log('\n🎓 Starting Transform with Progressive Learning...\n');
+    
+    // Step 1: Initialize available_options.json
+    console.log('📝 Initializing available_options.json...');
+    initializeAvailableOptions();
+    
     // Validate directory
     const resolvedPath = validateDirectory(dirPath);
-    
-    // Load field options for validation
-    const fieldOptions = loadFieldOptions();
-    
-    // Create output directory
     const outputDir = ensureOutputDirectory(resolvedPath);
     
-    // Find JSON files
-    const jsonFiles = findFilesWithExtension(resolvedPath, '.json');
-    
-    console.log(`\n📊 Converting JSON files to XLSX...`);
-    console.log('─'.repeat(80));
-    
-    if (jsonFiles.length === 0) {
-      console.log('(no JSON files found)');
-      return;
-    }
+    // Define processing order
+    const processingOrder = [
+      { file: 'blueprint_task_products.json', learnFields: ['taskProduct', 'enhancement-order'], validate: false },
+      { file: 'blueprint_tasks.json', learnFields: ['enhancement', 'responsibility_options', 'task'], validate: true },
+      { file: 'blueprint_services.json', learnFields: [], validate: true }
+    ];
     
     let successCount = 0;
     let errorCount = 0;
     
-    for (const file of jsonFiles) {
+    console.log('─'.repeat(80));
+    
+    for (const step of processingOrder) {
+      const inputPath = path.join(resolvedPath, step.file);
+      
+      if (!fs.existsSync(inputPath)) {
+        console.log(`⚠️  ${step.file} - Not found, skipping`);
+        continue;
+      }
+      
       try {
-        const inputPath = path.join(resolvedPath, file);
-        const outputFileName = file.replace('.json', '.xlsx');
+        const outputFileName = step.file.replace('.json', '.xlsx');
         const outputPath = path.join(outputDir, outputFileName);
         
         // Read JSON file
@@ -57,14 +71,14 @@ async function transform_from_json(dirPath: string): Promise<void> {
         try {
           jsonData = JSON.parse(jsonContent);
         } catch (parseError) {
-          console.log(`⚠️  ${file} - Invalid JSON, skipping`);
+          console.log(`⚠️  ${step.file} - Invalid JSON, skipping`);
           errorCount++;
           continue;
         }
         
         // Handle empty or invalid JSON
         if (!jsonData || (Array.isArray(jsonData) && jsonData.length === 0)) {
-          console.log(`⚠️  ${file} - Empty JSON, skipping`);
+          console.log(`⚠️  ${step.file} - Empty JSON, skipping`);
           errorCount++;
           continue;
         }
@@ -72,14 +86,24 @@ async function transform_from_json(dirPath: string): Promise<void> {
         // Convert to array for validation
         const dataArray = Array.isArray(jsonData) ? jsonData : [jsonData];
         
-        // Validate data for typos BEFORE flattening
-        const validationErrors = validateData(dataArray, fieldOptions);
+        // Validate if required
+        if (step.validate) {
+          const fieldOptions = loadFieldOptions();
+          const validationErrors = validateData(dataArray, fieldOptions);
+          
+          if (validationErrors.length > 0) {
+            reportValidationErrors(step.file, validationErrors, 'JSON');
+            errorCount++;
+            continue;
+          }
+        }
         
-        if (validationErrors.length > 0) {
-          // Report validation errors
-          reportValidationErrors(file, validationErrors, 'JSON');
-          errorCount++;
-          continue;
+        // Learn from this file
+        for (const fieldName of step.learnFields) {
+          const values = extractUniqueValues(dataArray, fieldName);
+          if (values.length > 0) {
+            updateAvailableOptions(fieldName, values);
+          }
         }
         
         // Flatten the data
@@ -89,13 +113,13 @@ async function transform_from_json(dirPath: string): Promise<void> {
         } else if (typeof jsonData === 'object') {
           flattenedData = [flattenObject(jsonData)];
         } else {
-          console.log(`⚠️  ${file} - Invalid JSON structure, skipping`);
+          console.log(`⚠️  ${step.file} - Invalid JSON structure, skipping`);
           errorCount++;
           continue;
         }
         
         // Create Excel workbook using utility function
-        const sheetName = file.replace('.json', '').substring(0, 31);
+        const sheetName = step.file.replace('.json', '').substring(0, 31);
         const workbook = await writeExcelData(flattenedData, {
           sheetName,
           columnWidth: 40,
@@ -105,21 +129,26 @@ async function transform_from_json(dirPath: string): Promise<void> {
         // Write XLSX file
         await workbook.xlsx.writeFile(outputPath);
         
-        // Get file sizes for reporting
         const inputSize = fs.statSync(inputPath).size;
         const outputSize = fs.statSync(outputPath).size;
         
-        console.log(`✅ ${file} (${formatSize(inputSize)}) → ${outputFileName} (${formatSize(outputSize)})`);
+        console.log(`✅ ${step.file} (${formatSize(inputSize)}) → ${outputFileName} (${formatSize(outputSize)})`);
+        if (step.learnFields.length > 0) {
+          console.log(`   📚 Learned: ${step.learnFields.join(', ')}`);
+        }
         successCount++;
         
       } catch (error) {
-        console.log(`❌ ${file} - Error: ${error}`);
+        console.log(`❌ ${step.file} - Error: ${error}`);
         errorCount++;
       }
     }
     
+    console.log('─'.repeat(80));
+    
     // Report summary
     reportSummary({ successCount, errorCount, outputDir }, 'JSON to XLSX');
+    console.log(`📋 Built: available_options.json\n`);
     
   } catch (error) {
     console.error('Fatal error:', error);
@@ -128,83 +157,103 @@ async function transform_from_json(dirPath: string): Promise<void> {
 }
 
 /**
- * Transform from Table - Convert XLSX files to JSON
+ * Transform from Table - Convert XLSX files to JSON with progressive learning
+ * Processes files in order: task_products -> tasks -> services
+ * Builds available_options.json dynamically during runtime
  */
 async function transform_from_table(dirPath: string): Promise<void> {
   try {
+    console.log('\n🎓 Starting Transform with Progressive Learning...\n');
+    
+    // Step 1: Initialize available_options.json
+    console.log('📝 Initializing available_options.json...');
+    initializeAvailableOptions();
+    
     // Validate directory
     const resolvedPath = validateDirectory(dirPath);
-    
-    // Load field options for validation
-    const fieldOptions = loadFieldOptions();
-    
-    // Create output directory
     const outputDir = ensureOutputDirectory(resolvedPath);
     
-    // Find XLSX files
-    const xlsxFiles = findFilesWithExtension(resolvedPath, '.xlsx');
-    
-    console.log(`\n📊 Converting XLSX files to JSON...`);
-    console.log('─'.repeat(80));
-    
-    if (xlsxFiles.length === 0) {
-      console.log('(no XLSX files found)');
-      return;
-    }
+    // Define processing order
+    const processingOrder = [
+      { file: 'blueprint_task_products.xlsx', learnFields: ['taskProduct', 'enhancement-order'], validate: false },
+      { file: 'blueprint_tasks.xlsx', learnFields: ['enhancement', 'responsibility_options', 'task'], validate: true },
+      { file: 'blueprint_services.xlsx', learnFields: [], validate: true }
+    ];
     
     let successCount = 0;
     let errorCount = 0;
     
-    for (const file of xlsxFiles) {
+    console.log('─'.repeat(80));
+    
+    for (const step of processingOrder) {
+      const inputPath = path.join(resolvedPath, step.file);
+      
+      if (!fs.existsSync(inputPath)) {
+        console.log(`⚠️  ${step.file} - Not found, skipping`);
+        continue;
+      }
+      
       try {
-        const inputPath = path.join(resolvedPath, file);
-        const outputFileName = file.replace('.xlsx', '.json');
+        const outputFileName = step.file.replace('.xlsx', '.json');
         const outputPath = path.join(outputDir, outputFileName);
         
-        // Read XLSX file using ExcelJS
+        // Read XLSX file
         const ExcelJS = require('exceljs');
         const workbook = new ExcelJS.Workbook();
         await workbook.xlsx.readFile(inputPath);
         
-        // Get the first worksheet
         const worksheet = workbook.worksheets[0];
         if (!worksheet) {
-          console.log(`⚠️  ${file} - No worksheet found, skipping`);
+          console.log(`⚠️  ${step.file} - No worksheet found, skipping`);
           errorCount++;
           continue;
         }
         
-        // Extract data using utility function
         const { rows } = readExcelData(worksheet);
         
-        // Validate data for typos
-        const validationErrors = validateData(rows, fieldOptions);
-        
-        if (validationErrors.length > 0) {
-          // Report validation errors
-          reportValidationErrors(file, validationErrors, 'XLSX');
-          errorCount++;
-          continue;
+        // Validate if required
+        if (step.validate) {
+          const fieldOptions = loadFieldOptions();
+          const validationErrors = validateData(rows, fieldOptions);
+          
+          if (validationErrors.length > 0) {
+            reportValidationErrors(step.file, validationErrors, 'XLSX');
+            errorCount++;
+            continue;
+          }
         }
         
-        // Write JSON file
+        // Learn from this file
+        for (const fieldName of step.learnFields) {
+          const values = extractUniqueValues(rows, fieldName);
+          if (values.length > 0) {
+            updateAvailableOptions(fieldName, values);
+          }
+        }
+        
+        // Write JSON output
         fs.writeFileSync(outputPath, JSON.stringify(rows, null, 2), 'utf-8');
         
-        // Get file sizes for reporting
         const inputSize = fs.statSync(inputPath).size;
         const outputSize = fs.statSync(outputPath).size;
         
-        console.log(`✅ ${file} (${formatSize(inputSize)}) → ${outputFileName} (${formatSize(outputSize)})`);
+        console.log(`✅ ${step.file} (${formatSize(inputSize)}) → ${outputFileName} (${formatSize(outputSize)})`);
+        if (step.learnFields.length > 0) {
+          console.log(`   📚 Learned: ${step.learnFields.join(', ')}`);
+        }
         successCount++;
         
       } catch (error) {
-        console.log(`❌ ${file} - Error: ${error}`);
+        console.log(`❌ ${step.file} - Error: ${error}`);
         errorCount++;
       }
     }
     
+    console.log('─'.repeat(80));
+    
     // Report summary
     reportSummary({ successCount, errorCount, outputDir }, 'XLSX to JSON');
+    console.log(`📋 Built: available_options.json\n`);
     
   } catch (error) {
     console.error('Fatal error:', error);

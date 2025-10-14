@@ -1,0 +1,70 @@
+{
+  "taskProduct": [
+    "Dollhouse",
+    "Elevation",
+    "Floor-measurements",
+    "Floorplan",
+    "Flythrough",
+    "Flythrough-path",
+    "Hdr-images",
+    "Measurement-tool",
+    "Panos",
+    "Thermo-view",
+    "Walkthrough-tour",
+    "Walkthrough-video",
+    "Walls-and-wall-elements",
+    "dslr_captures",
+    "geometry-scaffold",
+    "preconInput",
+    "roomplan-FP",
+    "spin_captures",
+    "spin_lidar",
+    "spin_thermo"
+  ],
+  "enhancement-order": [
+    "Blur",
+    "Declutter",
+    "Photo-enhancement",
+    "Staging"
+  ],
+  "enhancement": [
+    "Blur",
+    "Declutter",
+    "Photo-enhancement",
+    "Staging"
+  ],
+  "responsibility_options": [
+    "IM-operators",
+    "IM-scanner",
+    "auto",
+    "client"
+  ],
+  "task": [
+    "Data-Acquisition",
+    "Dollhouse-building",
+    "Elevation-building",
+    "Flythrough-generation",
+    "Flythrough-path-creation",
+    "Geometry-building-precon",
+    "Geometry-building-roomPlan",
+    "Geometry-building-spins",
+    "HDR-Photo-Blurring",
+    "HDR-Photo-Decluttering",
+    "HDR-Photo-Staging",
+    "HDR-Photo-enhancement",
+    "Measurement-tool-building",
+    "Pano-Generation-dslr",
+    "Pano-Generation-spins",
+    "Panos-Blurring",
+    "Panos-Decluttering",
+    "Panos-Photo-enhancement",
+    "Panos-Staging",
+    "Photo-Capture",
+    "Thermo-view-building",
+    "Walkthrough-building",
+    "Walkthrough-video-generation",
+    "Walls-and-wall-elements-building",
+    "floorMeasurement-building",
+    "floorplan-building"
+  ]
+}
