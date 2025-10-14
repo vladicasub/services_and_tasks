@@ -180,3 +180,33 @@ export function reportSummary(summary: TransformSummary, type: string): void {
   console.log(`   📁 Output directory: ${summary.outputDir}\n`);
 }
 
+/**
+ * Wait for user to press any key to continue
+ * @returns Promise that resolves when a key is pressed
+ */
+export function waitForKeypress(): Promise<void> {
+  return new Promise((resolve) => {
+    console.log('\n⏸️  Press any key to continue...');
+    
+    // Set stdin to raw mode to read single keypresses
+    if (process.stdin.isTTY) {
+      process.stdin.setRawMode(true);
+    }
+    process.stdin.resume();
+    process.stdin.setEncoding('utf8');
+    
+    const onData = () => {
+      // Restore stdin
+      if (process.stdin.isTTY) {
+        process.stdin.setRawMode(false);
+      }
+      process.stdin.pause();
+      process.stdin.removeListener('data', onData);
+      console.log('');
+      resolve();
+    };
+    
+    process.stdin.once('data', onData);
+  });
+}
+

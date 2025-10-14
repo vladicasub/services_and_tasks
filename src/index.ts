@@ -8,7 +8,8 @@ import {
   readExcelData, 
   formatSize,
   writeExcelData,
-  reportSummary
+  reportSummary,
+  waitForKeypress
 } from './utils';
 import { 
   loadFieldOptions, 
@@ -27,14 +28,21 @@ import { TransformSummary } from './types';
 /**
  * Transform from JSON - Convert specified JSON files to XLSX with progressive learning
  * Processes files in the order provided on command line
+ * @param filePaths - Array of JSON file paths to transform
+ * @param stepMode - If true, wait for keypress after each file
  */
-async function transform_from_json(filePaths: string[]): Promise<void> {
+async function transform_from_json(filePaths: string[], stepMode: boolean = false): Promise<void> {
   try {
     console.log('\n🎓 Starting Transform with Progressive Learning...\n');
     
     // Step 1: Initialize available_options.json
     console.log('📝 Initializing available_options.json...');
     initializeAvailableOptions();
+    
+    // Wait for keypress if step mode is enabled (after initialization)
+    if (stepMode) {
+      await waitForKeypress();
+    }
     
     // Determine output directory from first file
     const firstFile = filePaths[0];
@@ -163,6 +171,11 @@ async function transform_from_json(filePaths: string[]): Promise<void> {
         }
         successCount++;
         
+        // Wait for keypress if step mode is enabled
+        if (stepMode) {
+          await waitForKeypress();
+        }
+        
       } catch (error) {
         console.log(`❌ ${fileName} - Error: ${error}`);
         errorCount++;
@@ -184,14 +197,21 @@ async function transform_from_json(filePaths: string[]): Promise<void> {
 /**
  * Transform from Table - Convert specified XLSX files to JSON with progressive learning
  * Processes files in the order provided on command line
+ * @param filePaths - Array of XLSX file paths to transform
+ * @param stepMode - If true, wait for keypress after each file
  */
-async function transform_from_table(filePaths: string[]): Promise<void> {
+async function transform_from_table(filePaths: string[], stepMode: boolean = false): Promise<void> {
   try {
     console.log('\n🎓 Starting Transform with Progressive Learning...\n');
     
     // Step 1: Initialize available_options.json
     console.log('📝 Initializing available_options.json...');
     initializeAvailableOptions();
+    
+    // Wait for keypress if step mode is enabled (after initialization)
+    if (stepMode) {
+      await waitForKeypress();
+    }
     
     // Determine output directory from first file
     const firstFile = filePaths[0];
@@ -292,6 +312,11 @@ async function transform_from_table(filePaths: string[]): Promise<void> {
         }
         successCount++;
         
+        // Wait for keypress if step mode is enabled
+        if (stepMode) {
+          await waitForKeypress();
+        }
+        
       } catch (error) {
         console.log(`❌ ${fileName} - Error: ${error}`);
         errorCount++;
@@ -339,11 +364,14 @@ program
 program
   .option('--input-json <files...>', 'JSON files to convert to XLSX (space-separated)')
   .option('--input-table <files...>', 'XLSX files to convert to JSON (space-separated)')
+  .option('--step', 'Wait for keypress after processing each file')
   .action(async (options) => {
+    const stepMode = options.step || false;
+    
     if (options.inputJson) {
-      await transform_from_json(options.inputJson);
+      await transform_from_json(options.inputJson, stepMode);
     } else if (options.inputTable) {
-      await transform_from_table(options.inputTable);
+      await transform_from_table(options.inputTable, stepMode);
     } else {
       console.error('Error: You must specify either --input-json or --input-table');
       program.help();
