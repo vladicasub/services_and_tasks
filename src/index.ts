@@ -70,6 +70,27 @@ function buildAndSaveRelationshipsAfterTasks(
 }
 
 /**
+ * Build and save service specifications after processing blueprint_services
+ * @param fileBaseName - Name of the file being processed
+ * @param servicesData - Data from blueprint_services
+ */
+function buildAndSaveServiceSpecsAfterServices(
+  fileBaseName: string,
+  servicesData: any[]
+): void {
+  // Build service specifications if we just finished processing blueprint_services
+  if (fileBaseName === 'blueprint_services' && servicesData.length > 0) {
+    console.log('─'.repeat(80));
+    console.log('📋 Building service specifications...');
+    
+    const serviceSpecs = buildServiceSpecifications(servicesData);
+    updateAvailableOptionsServiceSpecs(serviceSpecs);
+    
+    console.log(`   ✅ Built ${Object.keys(serviceSpecs).length} service specifications`);
+  }
+}
+
+/**
  * Transform from JSON - Convert specified JSON files to XLSX with progressive learning
  * Processes files in the order provided on command line
  * @param filePaths - Array of JSON file paths to transform
@@ -215,15 +236,7 @@ async function transform_from_json(filePaths: string[], stepMode: boolean = fals
         buildAndSaveRelationshipsAfterTasks(fileBaseName, taskProductsData, tasksData);
         
         // Build service specifications if we just finished processing blueprint_services
-        if (fileBaseName === 'blueprint_services' && servicesData.length > 0) {
-          console.log('─'.repeat(80));
-          console.log('📋 Building service specifications...');
-          
-          const serviceSpecs = buildServiceSpecifications(servicesData);
-          updateAvailableOptionsServiceSpecs(serviceSpecs);
-          
-          console.log(`   ✅ Built ${Object.keys(serviceSpecs).length} service specifications`);
-        }
+        buildAndSaveServiceSpecsAfterServices(fileBaseName, servicesData);
         
         // Wait for keypress if step mode is enabled
         if (stepMode) {
@@ -366,15 +379,7 @@ async function transform_from_table(filePaths: string[], stepMode: boolean = fal
         buildAndSaveRelationshipsAfterTasks(fileBaseName, taskProductsData, tasksData);
         
         // Build service specifications if we just finished processing blueprint_services
-        if (fileBaseName === 'blueprint_services' && servicesData.length > 0) {
-          console.log('─'.repeat(80));
-          console.log('📋 Building service specifications...');
-          
-          const serviceSpecs = buildServiceSpecifications(servicesData);
-          updateAvailableOptionsServiceSpecs(serviceSpecs);
-          
-          console.log(`   ✅ Built ${Object.keys(serviceSpecs).length} service specifications`);
-        }
+        buildAndSaveServiceSpecsAfterServices(fileBaseName, servicesData);
         
         // Wait for keypress if step mode is enabled
         if (stepMode) {
