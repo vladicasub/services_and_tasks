@@ -4,9 +4,10 @@ always run the chain
  - run
 
 to compile
-cd /home/vladica/work/src/services_and_tasks && npm install
+cd /home/vladica/work/src/services_and_tasks && npm run build
 
 to check -- run all the static analysis of the code (install all the needed tools and extensions)
+fix all the warnings and errors reported
 
 to run 
 cd /home/vladica/work/src/services_and_tasks && ./transform --input-json input_jsons

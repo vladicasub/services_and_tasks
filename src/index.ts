@@ -4,6 +4,7 @@ import { program } from 'commander';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 /**
  * Flatten nested objects and arrays for Excel display
@@ -48,7 +49,7 @@ function flattenObject(obj: any, prefix: string = ''): any {
 /**
  * Transform from JSON - Convert JSON files to XLSX
  */
-function transform_from_json(dirPath: string): void {
+async function transform_from_json(dirPath: string): Promise<void> {
   try {
     // Resolve the directory path
     const resolvedPath = path.resolve(dirPath);
@@ -91,7 +92,7 @@ function transform_from_json(dirPath: string): void {
     let successCount = 0;
     let errorCount = 0;
     
-    jsonFiles.forEach((file) => {
+    for (const file of jsonFiles) {
       try {
         const inputPath = path.join(resolvedPath, file);
         const outputFileName = file.replace('.json', '.xlsx');
@@ -106,42 +107,55 @@ function transform_from_json(dirPath: string): void {
         } catch (parseError) {
           console.log(`⚠️  ${file} - Invalid JSON, skipping`);
           errorCount++;
-          return;
+          continue;
         }
         
         // Handle empty or invalid JSON
         if (!jsonData || (Array.isArray(jsonData) && jsonData.length === 0)) {
           console.log(`⚠️  ${file} - Empty JSON, skipping`);
           errorCount++;
-          return;
+          continue;
         }
         
-        // Convert JSON to worksheet
-        let worksheet: XLSX.WorkSheet;
-        
+        // Flatten the data
+        let flattenedData: any[];
         if (Array.isArray(jsonData)) {
-          // Flatten nested arrays and objects for better Excel display
-          const flattenedData = jsonData.map(item => flattenObject(item));
-          worksheet = XLSX.utils.json_to_sheet(flattenedData);
+          flattenedData = jsonData.map(item => flattenObject(item));
         } else if (typeof jsonData === 'object') {
-          // Handle single object - convert to array with one element
-          const flattenedData = [flattenObject(jsonData)];
-          worksheet = XLSX.utils.json_to_sheet(flattenedData);
+          flattenedData = [flattenObject(jsonData)];
         } else {
           console.log(`⚠️  ${file} - Invalid JSON structure, skipping`);
           errorCount++;
-          return;
+          continue;
         }
         
-        // Create workbook and add worksheet
-        const workbook = XLSX.utils.book_new();
+        // Create ExcelJS workbook and worksheet
+        const workbook = new ExcelJS.Workbook();
+        const sheetName = file.replace('.json', '').substring(0, 31);
+        const worksheet = workbook.addWorksheet(sheetName);
         
-        // Generate sheet name from filename (without extension)
-        const sheetName = file.replace('.json', '').substring(0, 31); // Excel sheet name limit is 31 chars
-        XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+        // Get column headers from the first object
+        const headers = Object.keys(flattenedData[0] || {});
+        
+        // Add header row with bold formatting
+        worksheet.columns = headers.map(header => ({
+          header: header,
+          key: header,
+          width: 40 // 4x default width (default is ~10)
+        }));
+        
+        // Make header row bold
+        const headerRow = worksheet.getRow(1);
+        headerRow.font = { bold: true };
+        headerRow.commit();
+        
+        // Add data rows
+        flattenedData.forEach(row => {
+          worksheet.addRow(row);
+        });
         
         // Write to file
-        XLSX.writeFile(workbook, outputPath);
+        await workbook.xlsx.writeFile(outputPath);
         
         const inputSize = (fs.statSync(inputPath).size / 1024).toFixed(2);
         const outputSize = (fs.statSync(outputPath).size / 1024).toFixed(2);
@@ -152,7 +166,7 @@ function transform_from_json(dirPath: string): void {
         console.log(`❌ ${file} - Error: ${error}`);
         errorCount++;
       }
-    });
+    }
     
     console.log('─'.repeat(80));
     console.log(`\n📈 Summary:`);
@@ -227,9 +241,9 @@ program
 program
   .option('-i, --input-json <directory>', 'Input directory containing JSON files')
   .option('-t, --input-table <directory>', 'Input directory containing XLSX files')
-  .action((options) => {
+  .action(async (options) => {
     if (options.inputJson) {
-      transform_from_json(options.inputJson);
+      await transform_from_json(options.inputJson);
     } else if (options.inputTable) {
       transform_from_table(options.inputTable);
     } else {
