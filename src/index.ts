@@ -389,6 +389,24 @@ function validateData(rows: any[], fieldOptions: Record<string, string[]>): Arra
 }
 
 /**
+ * Helper function to extract plain text from Excel cell value
+ * Handles richText objects that Excel creates for formatted cells
+ */
+function extractCellText(cellValue: any): string {
+  if (cellValue === null || cellValue === undefined) {
+    return '';
+  }
+  
+  // Handle richText objects (formatted cells in Excel)
+  if (typeof cellValue === 'object' && cellValue.richText && Array.isArray(cellValue.richText)) {
+    return cellValue.richText.map((rt: any) => rt.text || '').join('');
+  }
+  
+  // Handle regular values
+  return String(cellValue);
+}
+
+/**
  * Transform from Table - Convert XLSX files to JSON
  */
 async function transform_from_table(dirPath: string): Promise<void> {
@@ -465,17 +483,23 @@ async function transform_from_table(dirPath: string): Promise<void> {
           headers[colNumber - 1] = String(cell.value);
         });
         
+        // Find max column index from headers
+        const maxCol = headers.length;
+        
         // Get data rows
         worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
           if (rowNumber === 1) return; // Skip header row
           
           const rowData: any = {};
-          row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
-            const header = headers[colNumber - 1];
+          // Explicitly iterate over all column indices to catch empty cells
+          for (let colIdx = 1; colIdx <= maxCol; colIdx++) {
+            const header = headers[colIdx - 1];
             if (header) {
-              rowData[header] = cell.value !== null ? cell.value : '';
+              const cell = row.getCell(colIdx);
+              // Use extractCellText to handle richText objects
+              rowData[header] = extractCellText(cell.value);
             }
-          });
+          }
           
           // Unflatten the object to restore arrays
           rows.push(unflattenObject(rowData));
