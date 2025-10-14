@@ -55,6 +55,10 @@ async function transform_from_json(filePaths: string[]): Promise<void> {
     let successCount = 0;
     let errorCount = 0;
     
+    // Store data for relationship building and validation
+    let taskProductsData: any[] = [];
+    let tasksData: any[] = [];
+    
     console.log('─'.repeat(80));
     
     for (const filePath of filePaths) {
@@ -96,9 +100,20 @@ async function transform_from_json(filePaths: string[]): Promise<void> {
         // Convert to array for validation
         const dataArray = Array.isArray(jsonData) ? jsonData : [jsonData];
         
+        // Store data for relationship building and validation
+        if (fileBaseName === 'blueprint_task_products') {
+          taskProductsData = dataArray;
+        } else if (fileBaseName === 'blueprint_tasks') {
+          tasksData = dataArray;
+        }
+        
         // Validate if required
         if (config.validate) {
           const fieldOptions = loadFieldOptions();
+          // Add tasksData to fieldOptions for enhanced validation
+          if (tasksData.length > 0) {
+            (fieldOptions as any)['_tasksData'] = tasksData;
+          }
           const validationErrors = validateData(dataArray, fieldOptions);
           
           if (validationErrors.length > 0) {
@@ -244,6 +259,10 @@ async function transform_from_table(filePaths: string[]): Promise<void> {
         // Validate if required
         if (config.validate) {
           const fieldOptions = loadFieldOptions();
+          // Add tasksData to fieldOptions for enhanced validation
+          if (tasksData.length > 0) {
+            (fieldOptions as any)['_tasksData'] = tasksData;
+          }
           const validationErrors = validateData(rows, fieldOptions);
           
           if (validationErrors.length > 0) {

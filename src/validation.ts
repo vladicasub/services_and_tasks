@@ -208,6 +208,153 @@ export function validateData(rows: any[], fieldOptions: Record<string, string[]>
     }
   });
   
+  // Validate specification fields (compound fields with ":" separator)
+  const specificationFields = [
+    'responsibility specification (Task:Responsibility)',
+    'transformation specification (taskProduct:task)',
+    'enhancement medium specification (enhancement:taskProduct)'
+  ];
+  
+  rows.forEach((row, rowIndex) => {
+    for (const specField of specificationFields) {
+      if (row[specField] !== undefined && row[specField] !== null && row[specField] !== '') {
+        const specValue = String(row[specField]).trim();
+        if (!specValue) continue;
+        
+        // Parse the specification (format: "value1: value2")
+        const parts = specValue.split(':').map(p => p.trim());
+        if (parts.length !== 2) continue;
+        
+        const [part1, part2] = parts;
+        
+        // Determine what to validate based on the field name
+        if (specField.includes('Task:Responsibility')) {
+          // Validate task exists
+          const tasks = fieldOptions['task'];
+          if (tasks && tasks.length > 0 && !tasks.includes(part1)) {
+            errors.push({
+              row: rowIndex + 2,
+              field: specField + ' (Task part)',
+              value: part1,
+              validOptions: tasks
+            });
+          }
+          
+          // Validate responsibility exists for this task
+          const taskResponsibilities = (fieldOptions as any)['task_responsibilities'];
+          if (taskResponsibilities && taskResponsibilities[part1]) {
+            const validResponsibilities = taskResponsibilities[part1];
+            if (!validResponsibilities.includes(part2)) {
+              errors.push({
+                row: rowIndex + 2,
+                field: specField + ' (Responsibility part)',
+                value: part2,
+                validOptions: validResponsibilities
+              });
+            }
+          }
+        } else if (specField.includes('taskProduct:task')) {
+          // Validate taskProduct exists
+          const taskProducts = fieldOptions['taskProduct'];
+          if (taskProducts && taskProducts.length > 0 && !taskProducts.includes(part1)) {
+            errors.push({
+              row: rowIndex + 2,
+              field: specField + ' (taskProduct part)',
+              value: part1,
+              validOptions: taskProducts
+            });
+          }
+          
+          // Validate task can produce this taskProduct
+          const taskProductProducers = (fieldOptions as any)['taskProduct_producers'];
+          if (taskProductProducers && taskProductProducers[part1]) {
+            const validTasks = taskProductProducers[part1];
+            if (!validTasks.includes(part2)) {
+              errors.push({
+                row: rowIndex + 2,
+                field: specField + ' (task part)',
+                value: part2,
+                validOptions: validTasks
+              });
+            }
+          }
+        } else if (specField.includes('enhancement:taskProduct')) {
+          // Validate enhancement exists
+          const enhancements = fieldOptions['enhancement'];
+          if (enhancements && enhancements.length > 0 && !enhancements.includes(part1)) {
+            errors.push({
+              row: rowIndex + 2,
+              field: specField + ' (enhancement part)',
+              value: part1,
+              validOptions: enhancements
+            });
+          }
+          
+          // Validate taskProduct exists
+          const taskProducts = fieldOptions['taskProduct'];
+          if (taskProducts && taskProducts.length > 0 && !taskProducts.includes(part2)) {
+            errors.push({
+              row: rowIndex + 2,
+              field: specField + ' (taskProduct part)',
+              value: part2,
+              validOptions: taskProducts
+            });
+          }
+          
+          // Validate enhancement is valid for this taskProduct
+          const taskProductEnhancements = (fieldOptions as any)['taskProduct_enhancements'];
+          if (taskProductEnhancements && taskProductEnhancements[part2]) {
+            const validEnhancements = taskProductEnhancements[part2];
+            if (validEnhancements.length > 0 && !validEnhancements.includes(part1)) {
+              errors.push({
+                row: rowIndex + 2,
+                field: specField + ' (enhancement compatibility)',
+                value: specValue,
+                validOptions: validEnhancements.map((e: string) => `${e}: ${part2}`)
+              });
+            }
+          }
+          
+          // NEW: Validate there exists a task that adds this enhancement 
+          // and has this taskProduct as both input and output
+          const tasksData = (fieldOptions as any)['_tasksData'];
+          if (tasksData && Array.isArray(tasksData)) {
+            const matchingTask = tasksData.find((task: any) => {
+              // Check if task has the enhancement
+              if (task.enhancement !== part1) return false;
+              
+              // Check if taskProduct is in inputs
+              const inputs = Array.isArray(task.inputs) ? task.inputs : [];
+              if (!inputs.includes(part2)) return false;
+              
+              // Check if taskProduct is in outputs
+              const outputs = Array.isArray(task.outputs) ? task.outputs : [];
+              if (!outputs.includes(part2)) return false;
+              
+              return true;
+            });
+            
+            if (!matchingTask) {
+              // Find which tasks have this enhancement to suggest
+              const tasksWithEnhancement = tasksData
+                .filter((task: any) => task.enhancement === part1)
+                .map((task: any) => task.task);
+              
+              errors.push({
+                row: rowIndex + 2,
+                field: specField + ' (task existence)',
+                value: `No task adds "${part1}" enhancement to "${part2}"`,
+                validOptions: tasksWithEnhancement.length > 0 
+                  ? [`Tasks with ${part1}: ${tasksWithEnhancement.join(', ')}`]
+                  : ['No tasks found with this enhancement']
+              });
+            }
+          }
+        }
+      }
+    }
+  });
+  
   return errors;
 }
 
